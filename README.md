@@ -38,6 +38,8 @@ Just like the previous functions, but sets a function that will be notified when
 
 There is no Makefile or Visual Studio solution for rio2d, just add `rio2d.h` and `rio2d.cpp` to your project to be compiled along with your own source code.
 
+The easing functions used by the scripts were taken from [AHEasing](https://github.com/warrenm/AHEasing). Just add `easing.h` and `easing.c` to your projetcs, taking measures to guarantee that the number type used if `float`, not `double`.
+
 ## Live editing
 
 Live editing can be easily achieved with the use of an embedded webserver like [civetweb](https://github.com/civetweb/civetweb). The *example* folder has source code released in the public domain showing how to embed civetweb to implement live editing. Use [cURL](https://curl.haxx.se/) or another utility that can make POST requests to change the script anytime:
@@ -107,6 +109,3 @@ The *example* folder has a script which was used to test the game [Sky Defense](
              | 'trunc' '(' expression ')'
              .
 
-# Easing functions
-
-The easing functions used by the scripts were taken from [AHEasing](https://github.com/warrenm/AHEasing). Just add `easing.h` and `easing.c` to your projetcs, taking measures to guarantee that the number type used if `float`, not `double`.
