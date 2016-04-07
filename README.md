@@ -36,9 +36,9 @@ Just like the previous functions, but sets a function that will be notified when
 
 ## Using rio2d in your project
 
-There is no Makefile or Visual Studio solution for rio2d, just add `rio2d.h` and `rio2d.cpp` to your project to be compiled along with your own source code.
+There is no Makefile or Visual Studio solution for rio2d, just add `rio2d.h`, `script.cpp`, and `easing.inl` to your project to be compiled along with your own source code, preferrably under a folder of their own.
 
-The easing functions used by the scripts were taken from [AHEasing](https://github.com/warrenm/AHEasing). Just add `easing.h` and `easing.c` to your projetcs, taking measures to guarantee that the number type used if `float`, not `double`.
+The easing functions used by the scripts were taken from [AHEasing](https://github.com/warrenm/AHEasing).
 
 ## Live editing
 
