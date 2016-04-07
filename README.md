@@ -46,6 +46,8 @@ The *example* folder has a script which was used to test the game [Sky Defense](
     
     subroutine = ID '(' ID 'as' 'node' ( ',' ID 'as' type )* ')' statement* 'end' .
     
+    type = 'node' | 'number' | 'size' | 'vec2' .
+    
     statement = forever | parallel | repeat | sequence | set_prop | assign | signal | pause .
     
     forever = 'forever' statement* 'end' .
