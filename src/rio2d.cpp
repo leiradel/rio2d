@@ -21,6 +21,7 @@
 * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ******************************************************************************/
 
+#include <setjmp.h>
 #include <math.h>
 
 #include "rio2d.h"

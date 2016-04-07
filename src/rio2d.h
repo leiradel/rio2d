@@ -33,18 +33,26 @@ namespace rio2d
   class Script : public cocos2d::Ref
   {
   public:
+    // Compile-time configuration, change at will.
     enum Config
     {
+      // Maximum number of subroutines in a script.
       kMaxGlobals = 128,
+      
+      // Maximum number of arguments to a subroutine.
       kMaxLocalVars = 32,
+      
+      // Maximum number of statements running in parallel.
       kMaxThreads = 32,
+      
+      // Maximum stack depth.
       kMaxStack = 16,
     };
 
     typedef uint32_t Insn;
     typedef uint32_t Hash;
     typedef int      Index;
-    typedef int      Token;
+    typedef uint32_t Token;
     typedef uint32_t Address;
     typedef float    Number;
 
