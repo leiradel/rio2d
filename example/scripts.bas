@@ -45,10 +45,10 @@ sub swingHealth(target as node, screenSize as size, speed as number)
 end
 
 sub meteorFall(target as node, screenSize as size, speed as number)
-	let meteor_x = rand(0, floor(screenSize.width * 0.8)) + screenSize.width * 0.1
-	let target_x = rand(0, floor(screenSize.width * 0.8)) + screenSize.width * 0.1
+  let meteor_x = rand(0, floor(screenSize.width * 0.8)) + screenSize.width * 0.1
+  let target_x = rand(0, floor(screenSize.width * 0.8)) + screenSize.width * 0.1
   
-	target.x = meteor_x
+  target.x = meteor_x
   target.y = screenSize.height + target.bboxHeight * 0.5
   target.visible = true
   
