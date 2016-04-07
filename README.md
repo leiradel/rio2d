@@ -12,6 +12,8 @@ There are two functions that take the script source code and return a `rio2d::Sc
 
 Creates an instance of `rio2d::Script` given the script source code. If there were compilation errors, it returns `nullptr`, and copies the error message into `error`, using at most `size` characters including the null terminator.
 
+The `source` string must be null-terminated.
+
 * `static rio2d::Script* rio2d::Script::initWithSource(const char* source);`
 
 Just like the previous function, for when you don't care about the error message.
@@ -32,13 +34,17 @@ If the subroutine was successfully started, you don't have to do anything else t
 
 Just like the previous functions, but sets a function that will be notified when the script executes `signal` statements. The function receiving the notification gets the `cocos2d::Node*` instance that is the target of the subroutine, and the DJB2 hash of the string which was the parameter to `signal`.
 
+## Using rio2d in your project
+
+There is no Makefile or Visual Studio solution for rio2d, just add `rio2d.h` and `rio2d.cpp` to your project to be compiled along with your own source code.
+
 ## Live editing
 
 Live editing can be easily achieved with the use of an embedded webserver like [civetweb](https://github.com/civetweb/civetweb). The *example* folder has source code released in the public domain showing how to embed civetweb to implement live editing. Use [cURL](https://curl.haxx.se/) or another utility that can make POST requests to change the script anytime:
 
 `curl --data-binary @scripts.bas "http://192.168.2.5:8080/scripts.bas"`
 
-## Script Syntax
+## Script syntax
 
 The *example* folder has a script which was used to test the game [Sky Defense](https://www.packtpub.com/game-development/cocos2d-x-example-beginners-guide). The script grammar is:
 
@@ -101,6 +107,6 @@ The *example* folder has a script which was used to test the game [Sky Defense](
              | 'trunc' '(' expression ')'
              .
 
-# Easing Functions
+# Easing functions
 
 The easing functions used by the scripts were taken from [AHEasing](https://github.com/warrenm/AHEasing). Just add `easing.h` and `easing.c` to your projetcs, taking measures to guarantee that the number type used if `float`, not `double`.
