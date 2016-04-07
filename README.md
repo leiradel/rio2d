@@ -44,7 +44,7 @@ The *example* folder has a script which was used to test the game [Sky Defense](
 
     script = subroutine* .
     
-    subroutine = ID '(' ID 'as' 'node' ( ',' ID 'as' type )* ')' statement* 'end' .
+    subroutine = 'sub' ID '(' ID 'as' 'node' ( ',' ID 'as' type )* ')' statement* 'end' .
     
     type = 'node' | 'number' | 'size' | 'vec2' .
     
