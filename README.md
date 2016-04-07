@@ -23,24 +23,24 @@ Just like the previous function, for when you don't care about the error message
 
 Starts the execution on the object `target` of the subroutine whose name's [DJB2](http://www.cse.yorku.ca/~oz/hash.html) hash is `hash`, or use the name directly with the second version. Returns `true` if the subroutine was started, or `false` if it was not found. If the subroutine needs more arguments than the target object, they are passed after the `target` argument of this function.
 
-Keep in mind that the script is case-insensitive when evaluating the DJB2 hash of the subroutine name.
+Keep in mind that the script is **case-insensitive** when evaluating the DJB2 hash of the subroutine name.
 
 If the subroutine was successfully started, you don't have to do anything else to keep it running.
 
 * `bool rio2d::Script::runActionWithListener(cocos2d::Ref* listener, rio2d::Script::NotifyFunc port, Hash hash, cocos2d::Node* target, ...);`
 * `bool rio2d::Script::runActionWithListener(cocos2d::Ref* listener, rio2d::Script::NotifyFunc port, const char* name, cocos2d::Node* target, ...);`
 
-Just like the previous function2, but sets a function that will be notified when the script executes `signal` statements. The function receiving the notification gets the `cocos2d::Node*` instance that is the target of the subroutine, and the DJB2 hash of the string which was the parameter to `signal`.
+Just like the previous functions, but sets a function that will be notified when the script executes `signal` statements. The function receiving the notification gets the `cocos2d::Node*` instance that is the target of the subroutine, and the DJB2 hash of the string which was the parameter to `signal`.
 
 ## Live editing
 
-Live editing can be easily achieved with the use of an embedded webserver like [civetweb](https://github.com/civetweb/civetweb). The *example* folder has an example, released in the public domain. Use [cURL](https://curl.haxx.se/) or another utility that can make POST requests to change the script anytime:
+Live editing can be easily achieved with the use of an embedded webserver like [civetweb](https://github.com/civetweb/civetweb). The *example* folder has source code released in the public domain showing how to embed civetweb to implement live editing. Use [cURL](https://curl.haxx.se/) or another utility that can make POST requests to change the script anytime:
 
 `curl --data-binary @scripts.bas "http://192.168.2.5:8080/scripts.bas"`
 
 ## Script Syntax
 
-The *example* subfolder has a script which was used to test the game [Sky Defense](https://www.packtpub.com/game-development/cocos2d-x-example-beginners-guide). The script grammar is:
+The *example* folder has a script which was used to test the game [Sky Defense](https://www.packtpub.com/game-development/cocos2d-x-example-beginners-guide). The script grammar is:
 
     script = subroutine* .
     
