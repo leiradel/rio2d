@@ -26,6 +26,9 @@
 
 #include "rio2d.h"
 
+// Include easing functions taken from https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c
+#include "easing.inl"
+
 namespace // Anonymous namespace to hyde the implementation details
 {
   // Error codes.
@@ -172,7 +175,6 @@ namespace // Anonymous namespace to hyde the implementation details
   };
 
   // Available easing functions.
-  // Taken from https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c
   struct Easing
   {
     enum
@@ -281,44 +283,44 @@ namespace // Anonymous namespace to hyde the implementation details
       default:             return -1;
       }
     }
-
+    
     static inline rio2d::Script::Number evaluate(rio2d::Script::Index index, rio2d::Script::Number p)
     {
       typedef rio2d::Script::Number(*Ease)(rio2d::Script::Number);
 
       static const Ease functions[] =
       {
-        backin,
-        backinout,
-        backout,
-        bouncein,
-        bounceinout,
-        bounceout,
-        circin,
-        circinout,
-        circout,
-        cubicin,
-        cubicinout,
-        cubicout,
-        elasticin,
-        elasticinout,
-        elasticout,
-        expin,
-        expinout,
-        expout,
-        linear,
-        quadin,
-        quadinout,
-        quadout,
-        quarticin,
-        quarticinout,
-        quarticout,
-        quinticin,
-        quinticinout,
-        quinticout,
-        sinein,
-        sineinout,
-        sineout,
+        BackEaseIn,
+        BackEaseInOut,
+        BackEaseOut,
+        BounceEaseIn,
+        BounceEaseInOut,
+        BounceEaseOut,
+        CircularEaseIn,
+        CircularEaseInOut,
+        CircularEaseOut,
+        CubicEaseIn,
+        CubicEaseInOut,
+        CubicEaseOut,
+        ElasticEaseIn,
+        ElasticEaseInOut,
+        ElasticEaseOut,
+        ExponentialEaseIn,
+        ExponentialEaseInOut,
+        ExponentialEaseOut,
+        LinearInterpolation,
+        QuadraticEaseIn,
+        QuadraticEaseInOut,
+        QuadraticEaseOut,
+        QuarticEaseIn,
+        QuarticEaseInOut,
+        QuarticEaseOut,
+        QuinticEaseIn,
+        QuinticEaseInOut,
+        QuinticEaseOut,
+        SineEaseIn,
+        SineEaseInOut,
+        SineEaseOut,
       };
 
       CCASSERT(index >= 0 && index < 31, "Invalid ease function index");
