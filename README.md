@@ -55,10 +55,10 @@ The *example* subfolder has a script which was used to test the game [Sky Defens
     sequence = 'sequence' statement* 'end' .
     
     set_prop = ID '.' ID '=' expression
-            | ID '.' ( fadein | fadeout ) 'in' expression 'secs' ( 'with' ease )?
-            | ID '.' ( rotateby | rotateto | scaleby | scaleto ) expression 'in' expression 'secs' ( 'with' ease )?
-            | ID '.' ( moveby | moveto ) expression ',' expression 'in' expression 'secs' ( 'with' ease )?
-            .
+             | ID '.' ( fadein | fadeout ) 'in' expression 'secs' ( 'with' ease )?
+             | ID '.' ( rotateby | rotateto | scaleby | scaleto ) expression 'in' expression 'secs' ( 'with' ease )?
+             | ID '.' ( moveby | moveto ) expression ',' expression 'in' expression 'secs' ( 'with' ease )?
+             .
     
     ease = backin | backinout | backout | bouncein | bounceinout | bounceout | circin | circinout | circout
          | cubicin | cubicinout | cubicout | elasticin | elasticinout | elasticout | expin | expinout | expout
