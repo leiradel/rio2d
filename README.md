@@ -34,7 +34,9 @@ Just like the previous function2, but sets a function that will be notified when
 
 ## Live editing
 
-Live editing can be easily achieved with the use of an embedded webserver like [civetweb](https://github.com/civetweb/civetweb). The *example* folder has an example, released in the public domain.
+Live editing can be easily achieved with the use of an embedded webserver like [civetweb](https://github.com/civetweb/civetweb). The *example* folder has an example, released in the public domain. Use [cURL](https://curl.haxx.se/) or another utility that can make POST requests to change the script anytime:
+
+`curl --data-binary @scripts.bas "http://192.168.2.5:8080/scripts.bas"`
 
 ## Script Syntax
 
