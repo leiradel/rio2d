@@ -42,7 +42,7 @@ To implement live editing, use the functions under the `rio2d::Webserver` namesp
 
 Initialize the embedded web server, making it listen to HTTP request on `port`.
 
-* `void destroy();`
+* `void rio2d::Webserver::destroy();`
 
 Stops the web server, releasing all resources. This should be called in your `cocos2d::Application` destructor.
 
