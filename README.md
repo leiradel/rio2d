@@ -23,7 +23,7 @@ Just like the previous function, for when you don't care about the error message
 * `bool rio2d::Script::runAction(Hash hash, cocos2d::Node* target, ...);`
 * `bool rio2d::Script::runAction(const char* name, cocos2d::Node* target, ...);`
 
-Starts the execution on the object `target` of the subroutine whose name's [DJB2](http://www.cse.yorku.ca/~oz/hash.html) hash is `hash`, or use the name directly with the second version. Returns `true` if the subroutine was started, or `false` if it was not found. If the subroutine needs more arguments than the target object, they are passed after the `target` argument of this function.
+Starts the execution on the object `target` of the subroutine whose name's [DJB2](http://www.cse.yorku.ca/~oz/hash.html) hash is `hash`, or use the name directly with the second version. Returns `true` if the subroutine was started, or `false` if it was not found. If the subroutine needs more arguments than the target object, they are passed after the `target` argument of the functions.
 
 Keep in mind that the script is **case-insensitive** when evaluating the DJB2 hash of the subroutine name.
 
@@ -67,9 +67,9 @@ Replace the IP address by the IP of the machine running the application, and cha
 
 ## Using rio2d in your project
 
-There is no Makefile or Visual Studio solution for rio2d, just all files under the `src` folder to your project to be compiled along with your own source code, preferrably under a folder of their own.
+There is no Makefile or Visual Studio solution for rio2d, just copy all files under the `src` folder to your project, preferrably under a folder of their own, and make sure they're compiled along with your own source code.
 
-The easing functions used by the scripts were taken from [AHEasing](https://github.com/warrenm/AHEasing), its source code and also CivetWeb's source code are source code is included here so there's no need to download them.
+The easing functions used by the scripts were taken from [AHEasing](https://github.com/warrenm/AHEasing), its source code and also CivetWeb's source code are included here so there's no need to download them.
 
 ## Script syntax
 
