@@ -71,6 +71,18 @@ There is no Makefile or Visual Studio solution for rio2d, just copy all files un
 
 The easing functions used by the scripts were taken from [AHEasing](https://github.com/warrenm/AHEasing), its source code and also CivetWeb's source code are included here so there's no need to download them.
 
+## DJB2 hashes
+
+All subroutine identifiers are stored as DJB2 hashes to avoid allocating memory for strings. If you use the functions that take the subroutine name, rio2d will evaluate the DJB2 hash of the name on each call. To avoid that, pre-compute the hash and use them instead of subroutine names. There is a small command-line utility to calculate DJB2 hashes in the `etc` folder (compile with `gcc -O2 -o djb2 djb2.c` or a similar command).
+
+    $ djb2 --help
+    USAGE: djb2 [ --case ] [ --enum ] [ --prefix ] [ --cpp ] identifiers...
+
+    --case     Lists the hashes with case statements for use with a switch
+    --enum     Lists identifiers and the hashes in a format to be used in an enum
+    --prefix   Adds a 'k' prefix to the identifiers (when they're used)
+    --cpp      Outputs C++-style comments instead of C ones where applicable
+
 ## Script syntax
 
 The *example* folder has a script which was used to test the game [Sky Defense](https://www.packtpub.com/game-development/cocos2d-x-example-beginners-guide). The script grammar is:
