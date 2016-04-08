@@ -29,6 +29,67 @@
 // Include easing functions taken from https://github.com/warrenm/AHEasing/blob/master/AHEasing/easing.c
 #include "easing.inl"
 
+
+rio2d::Hash rio2d::hash(const char* str)
+{
+  rio2d::Hash hash = 5381;
+
+  if (*str != 0)
+  {
+    do
+    {
+      hash = hash * 33 + (uint8_t)*str++;
+    } while (*str != 0);
+  }
+
+  return hash;
+}
+
+rio2d::Hash rio2d::hashLower(const char* str)
+{
+  rio2d::Hash hash = 5381;
+
+  if (*str != 0)
+  {
+    do
+    {
+      hash = hash * 33 + (uint8_t)tolower(*str++);
+    } while (*str != 0);
+  }
+
+  return hash;
+}
+
+rio2d::Hash rio2d::hash(const char* str, size_t length)
+{
+  rio2d::Hash hash = 5381;
+
+  if (length != 0)
+  {
+    do
+    {
+      hash = hash * 33 + (uint8_t)*str++;
+    } while (--length != 0);
+  }
+
+  return hash;
+}
+
+rio2d::Hash rio2d::hashLower(const char* str, size_t length)
+{
+  rio2d::Hash hash = 5381;
+
+  if (length != 0)
+  {
+    do
+    {
+      hash = hash * 33 + (uint8_t)tolower(*str++);
+    } while (--length != 0);
+  }
+
+  return hash;
+}
+
 namespace // Anonymous namespace to hyde the implementation details
 {
   // Error codes.
@@ -146,7 +207,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kYIndex = 18,
     };
 
-    static inline rio2d::Script::Index index(rio2d::Script::Hash hash)
+    static inline rio2d::Script::Index index(rio2d::Hash hash)
     {
       switch (hash)
       {
@@ -245,7 +306,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kSineoutIndex = 30,
     };
 
-    static inline rio2d::Script::Index index(rio2d::Script::Hash hash)
+    static inline rio2d::Script::Index index(rio2d::Hash hash)
     {
       switch (hash)
       {
@@ -510,13 +571,13 @@ namespace // Anonymous namespace to hyde the implementation details
   class Emitter
   {
   public:
-    virtual Errors::Enum addGlobal(rio2d::Script::Hash hash) = 0;
+    virtual Errors::Enum addGlobal(rio2d::Hash hash) = 0;
     virtual size_t       numGlobals() const = 0;
 
-    virtual Errors::Enum addLocal(rio2d::Script::Hash hash, rio2d::Script::Token type) = 0;
+    virtual Errors::Enum addLocal(rio2d::Hash hash, rio2d::Script::Token type) = 0;
     virtual size_t       numLocals() const = 0;
-    virtual Errors::Enum getIndex(rio2d::Script::Hash hash, rio2d::Script::Index* index) const = 0;
-    virtual Errors::Enum getType(rio2d::Script::Hash hash, rio2d::Script::Token* type) const = 0;
+    virtual Errors::Enum getIndex(rio2d::Hash hash, rio2d::Script::Index* index) const = 0;
+    virtual Errors::Enum getType(rio2d::Hash hash, rio2d::Script::Token* type) const = 0;
 
     virtual void                   emit(rio2d::Script::Insn insn, va_list args) = 0;
     virtual rio2d::Script::Address getPC() const = 0;
@@ -529,11 +590,11 @@ namespace // Anonymous namespace to hyde the implementation details
   protected:
     struct Local
     {
-      rio2d::Script::Hash  m_hash;
+      rio2d::Hash  m_hash;
       rio2d::Script::Token m_type;
     };
 
-    rio2d::Script::Hash m_globals[rio2d::Script::kMaxGlobals];
+    rio2d::Hash m_globals[rio2d::Script::kMaxGlobals];
     Local  m_locals[rio2d::Script::kMaxLocalVars];
     size_t m_numGlobals;
     size_t m_numLocals;
@@ -546,12 +607,12 @@ namespace // Anonymous namespace to hyde the implementation details
       m_numGlobals = 0;
     }
 
-    Errors::Enum addGlobal(rio2d::Script::Hash hash)
+    Errors::Enum addGlobal(rio2d::Hash hash)
     {
       if (m_numGlobals < rio2d::Script::kMaxGlobals)
       {
-        rio2d::Script::Hash* global = m_globals;
-        const rio2d::Script::Hash* end = global + m_numGlobals;
+        rio2d::Hash* global = m_globals;
+        const rio2d::Hash* end = global + m_numGlobals;
 
         while (global < end)
         {
@@ -577,7 +638,7 @@ namespace // Anonymous namespace to hyde the implementation details
       return m_numGlobals;
     }
 
-    Errors::Enum addLocal(rio2d::Script::Hash hash, rio2d::Script::Token type)
+    Errors::Enum addLocal(rio2d::Hash hash, rio2d::Script::Token type)
     {
       if (m_numLocals < rio2d::Script::kMaxLocalVars)
       {
@@ -613,7 +674,7 @@ namespace // Anonymous namespace to hyde the implementation details
       return m_numLocals;
     }
 
-    Errors::Enum getIndex(rio2d::Script::Hash hash, rio2d::Script::Index* index) const
+    Errors::Enum getIndex(rio2d::Hash hash, rio2d::Script::Index* index) const
     {
       const Local* local = m_locals;
       const Local* end = local + m_numLocals;
@@ -632,7 +693,7 @@ namespace // Anonymous namespace to hyde the implementation details
       return Errors::kUnknownIdentifier;
     }
 
-    Errors::Enum getType(rio2d::Script::Hash hash, rio2d::Script::Token* type) const
+    Errors::Enum getType(rio2d::Hash hash, rio2d::Script::Token* type) const
     {
       const Local* local = m_locals;
       const Local* end = local + m_numLocals;
@@ -687,7 +748,7 @@ namespace // Anonymous namespace to hyde the implementation details
       m_pc = 0;
     }
 
-    Errors::Enum addGlobal(rio2d::Script::Hash hash)
+    Errors::Enum addGlobal(rio2d::Hash hash)
     {
       rio2d::Script::Subroutine* global = m_globals + m_numGlobals++;
 
@@ -703,7 +764,7 @@ namespace // Anonymous namespace to hyde the implementation details
       return m_numGlobals;
     }
 
-    Errors::Enum addLocal(rio2d::Script::Hash hash, rio2d::Script::Token type)
+    Errors::Enum addLocal(rio2d::Hash hash, rio2d::Script::Token type)
     {
       if (m_numGlobals != 0)
       {
@@ -745,7 +806,7 @@ namespace // Anonymous namespace to hyde the implementation details
       return 0;
     }
 
-    Errors::Enum getIndex(rio2d::Script::Hash hash, rio2d::Script::Index* index) const
+    Errors::Enum getIndex(rio2d::Hash hash, rio2d::Script::Index* index) const
     {
       if (m_numGlobals != 0)
       {
@@ -768,7 +829,7 @@ namespace // Anonymous namespace to hyde the implementation details
       return Errors::kUnknownIdentifier;
     }
 
-    Errors::Enum getType(rio2d::Script::Hash hash, rio2d::Script::Token* type) const
+    Errors::Enum getType(rio2d::Hash hash, rio2d::Script::Token* type) const
     {
       if (m_numGlobals != 0)
       {
@@ -831,7 +892,7 @@ namespace // Anonymous namespace to hyde the implementation details
 
       case Insns::kSignal:
         m_bytecode[m_pc++].m_insn = insn;
-        m_bytecode[m_pc++].m_hash = va_arg(args, rio2d::Script::Hash);
+        m_bytecode[m_pc++].m_hash = va_arg(args, rio2d::Hash);
         break;
 
       case Insns::kPush:
@@ -883,7 +944,7 @@ namespace // Anonymous namespace to hyde the implementation details
 
     const char* m_lexeme;
     size_t m_length;
-    rio2d::Script::Hash m_hash;
+    rio2d::Hash m_hash;
     rio2d::Script::Token m_token;
     unsigned m_tokenLine;
 
@@ -1047,7 +1108,7 @@ namespace // Anonymous namespace to hyde the implementation details
         } while (isalnum(*m_current) || *m_current == '_');
 
         // Evaluate the hash of the identifier to check if it's a keyword.
-        m_hash = rio2d::Script::hashLower(m_lexeme, m_current - m_lexeme);
+        m_hash = rio2d::hashLower(m_lexeme, m_current - m_lexeme);
 
         switch (m_hash)
         {
@@ -1179,7 +1240,7 @@ namespace // Anonymous namespace to hyde the implementation details
         m_lexeme++;
         m_length = m_current++ - m_lexeme; // m_current is '"', can increment directly.
         m_token = Tokens::kStringConst;
-        m_hash = rio2d::Script::hash(m_lexeme, m_length);
+        m_hash = rio2d::hash(m_lexeme, m_length);
         return;
       }
 
@@ -1549,12 +1610,12 @@ namespace // Anonymous namespace to hyde the implementation details
 
       match('(');
 
-      rio2d::Script::Hash hash = m_hash;
+      rio2d::Hash hash = m_hash;
       match(Tokens::kIdentifier);
 
       match(Tokens::kAs);
 
-      rio2d::Script::Hash type = m_token;
+      rio2d::Hash type = m_token;
 
       if (type != Tokens::kNode)
       {
@@ -1759,7 +1820,7 @@ namespace // Anonymous namespace to hyde the implementation details
 
     void parseStatement()
     {
-      rio2d::Script::Hash hash = m_hash;
+      rio2d::Hash hash = m_hash;
       match(Tokens::kIdentifier);
 
       rio2d::Script::Token type;
@@ -1794,7 +1855,7 @@ namespace // Anonymous namespace to hyde the implementation details
     {
       match();
 
-      rio2d::Script::Hash hash = m_hash;
+      rio2d::Hash hash = m_hash;
       match(Tokens::kIdentifier);
 
       match('=');
@@ -1837,7 +1898,7 @@ namespace // Anonymous namespace to hyde the implementation details
     void parseSignal()
     {
       match();
-      rio2d::Script::Hash hash = m_hash;
+      rio2d::Hash hash = m_hash;
       match(Tokens::kStringConst);
       emit(Insns::kSignal, hash);
     }
@@ -2317,7 +2378,7 @@ namespace // Anonymous namespace to hyde the implementation details
       return true; // Continue running
     }
 
-    void callNodeMethod(Thread* thread, cocos2d::Node* target, rio2d::Script::Hash hash)
+    void callNodeMethod(Thread* thread, cocos2d::Node* target, rio2d::Hash hash)
     {
       (void)thread;
       (void)target;
@@ -2643,7 +2704,7 @@ namespace // Anonymous namespace to hyde the implementation details
 
     bool signal(Thread* thread)
     {
-      rio2d::Script::Hash hash = m_bytecode[thread->m_pc++].m_hash;
+      rio2d::Hash hash = m_bytecode[thread->m_pc++].m_hash;
 
       if (m_listener != nullptr)
       {
@@ -3015,7 +3076,7 @@ bool rio2d::Script::runAction(const char* name, cocos2d::Node* target, ...)
   va_list args;
   va_start(args, target);
 
-  bool res = runActionV(nullptr, nullptr, rio2d::Script::hash(name), target, args);
+  bool res = runActionV(nullptr, nullptr, rio2d::Hash(name), target, args);
 
   va_end(args);
   return res;
@@ -3112,64 +3173,4 @@ bool rio2d::Script::init(const char* source, char* error, size_t size)
   }
 
   return false;
-}
-
-rio2d::Script::Hash rio2d::Script::hash(const char* str)
-{
-  rio2d::Script::Hash hash = 5381;
-
-  if (*str != 0)
-  {
-    do
-    {
-      hash = hash * 33 + (uint8_t)*str++;
-    } while (*str != 0);
-  }
-
-  return hash;
-}
-
-rio2d::Script::Hash rio2d::Script::hashLower(const char* str)
-{
-  rio2d::Script::Hash hash = 5381;
-
-  if (*str != 0)
-  {
-    do
-    {
-      hash = hash * 33 + (uint8_t)tolower(*str++);
-    } while (*str != 0);
-  }
-
-  return hash;
-}
-
-rio2d::Script::Hash rio2d::Script::hash(const char* str, size_t length)
-{
-  rio2d::Script::Hash hash = 5381;
-
-  if (length != 0)
-  {
-    do
-    {
-      hash = hash * 33 + (uint8_t)*str++;
-    } while (--length != 0);
-  }
-
-  return hash;
-}
-
-rio2d::Script::Hash rio2d::Script::hashLower(const char* str, size_t length)
-{
-  rio2d::Script::Hash hash = 5381;
-
-  if (length != 0)
-  {
-    do
-    {
-      hash = hash * 33 + (uint8_t)tolower(*str++);
-    } while (--length != 0);
-  }
-
-  return hash;
 }

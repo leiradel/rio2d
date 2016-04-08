@@ -30,6 +30,13 @@
 
 namespace rio2d
 {
+  typedef uint32_t Hash;
+
+  Hash hash(const char* str);
+  Hash hashLower(const char* str);
+  Hash hash(const char* str, size_t length);
+  Hash hashLower(const char* str, size_t length);
+
   class Script : public cocos2d::Ref
   {
   public:
@@ -50,7 +57,6 @@ namespace rio2d
     };
 
     typedef uint32_t Insn;
-    typedef uint32_t Hash;
     typedef int      Index;
     typedef uint32_t Token;
     typedef uint32_t Address;
@@ -98,11 +104,6 @@ namespace rio2d
     bool runAction(const char* name, cocos2d::Node* target, ...);
     bool runActionWithListener(cocos2d::Ref* listener, NotifyFunc port, Hash hash, cocos2d::Node* target, ...);
     bool runActionWithListener(cocos2d::Ref* listener, NotifyFunc port, const char* name, cocos2d::Node* target, ...);
-
-    static Hash hash(const char* str);
-    static Hash hashLower(const char* str);
-    static Hash hash(const char* str, size_t length);
-    static Hash hashLower(const char* str, size_t length);
 
   protected:
     bool init(const char* source, char* error, size_t size);
