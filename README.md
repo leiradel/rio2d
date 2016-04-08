@@ -34,17 +34,42 @@ If the subroutine was successfully started, you don't have to do anything else t
 
 Just like the previous functions, but sets a function that will be notified when the script executes `signal` statements. The function receiving the notification gets the `cocos2d::Node*` instance that is the target of the subroutine, and the DJB2 hash of the string which was the parameter to `signal`.
 
-## Using rio2d in your project
-
-There is no Makefile or Visual Studio solution for rio2d, just add `rio2d.h`, `script.cpp`, and `easing.inl` to your project to be compiled along with your own source code, preferrably under a folder of their own.
-
-The easing functions used by the scripts were taken from [AHEasing](https://github.com/warrenm/AHEasing).
-
 ## Live editing
 
-Live editing can be easily achieved with the use of an embedded webserver like [civetweb](https://github.com/civetweb/civetweb). The *example* folder has source code released in the public domain showing how to embed civetweb to implement live editing. Use [cURL](https://curl.haxx.se/) or another utility that can make POST requests to change the script anytime:
+To implement live editing, use the functions under the `rio2d::Webserver` namespace:
 
-`curl --data-binary @scripts.bas "http://192.168.2.5:8080/scripts.bas"`
+* `bool rio2d::Webserver::init(short port);`
+
+Initialize the embedded web server, making it listen to HTTP request on `port`.
+
+* `void destroy();`
+
+Stops the web server, releasing all resources. This should be called in your `cocos2d::Application` destructor.
+
+* `rio2d::Script* rio2d::Webserver::getScript(const char* filename);`
+
+Returns a script instance by filename, i.e.
+
+    auto script = rio2d::Webserver::getScript("script.bas");
+
+Instead of keeping the `rio2d::Script` instances yourself, always get them via this function. It does the following:
+
+1. Tries to find a script instance with the same file name, and returns it.
+1. Tries to create a new script instance by loading and compiling the source code in the `filename` file.
+1. Tries to add a HTTP resource with URL `/<filename>` to the web server (after converting any back slashes to forward slashes).
+1. Returns the script.
+
+When the script is successfully registered as a HTTP resource, a HTTP POST to the script's URI will compile the POST data and, if successful, replace the old script instance by the new one, so all calls to `rio2d::Webserver::getScript` will return the new instance. The [cURL](https://curl.haxx.se/) command to POST a new script to the web server is:
+
+    curl --data-binary @scripts.bas "http://192.168.2.5:8080/scripts.bas"
+
+Replace the IP address by the IP of the machine running the application, and change the name of the script. The embedded web server uses the excellent [CivetWeb](https://github.com/civetweb/civetweb).
+
+## Using rio2d in your project
+
+There is no Makefile or Visual Studio solution for rio2d, just all files under the `src` folder to your project to be compiled along with your own source code, preferrably under a folder of their own.
+
+The easing functions used by the scripts were taken from [AHEasing](https://github.com/warrenm/AHEasing), its source code and also CivetWeb's source code are source code is included here so there's no need to download them.
 
 ## Script syntax
 

@@ -115,4 +115,12 @@ namespace rio2d
     Subroutine* m_globals;
     size_t m_numGlobals;
   };
+
+  namespace Webserver
+  {
+    bool init(short port);
+    void destroy();
+
+    Script* getScript(const char* filename);
+  }
 }
