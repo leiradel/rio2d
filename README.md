@@ -65,6 +65,8 @@ When the script is successfully registered as a HTTP resource, a HTTP POST to th
 
 Replace the IP address by the IP of the machine running the application, and change the name of the script. The embedded web server uses the excellent [CivetWeb](https://github.com/civetweb/civetweb).
 
+**Note**: The webserver is removed on release builds (where NDEBUG is defined), but you still call `rio2d::Webserver::getScript` to get script instances; you just don't have the ability to update them during runtime anymore.
+
 ## Using rio2d in your project
 
 There is no Makefile or Visual Studio solution for rio2d, just copy all files under the `src` folder to your project, preferrably under a folder of their own, and make sure they're compiled along with your own source code.
