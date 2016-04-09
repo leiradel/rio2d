@@ -25,14 +25,20 @@
 #include <atomic>
 
 #include "rio2d.h"
+
+#ifndef NDEBUG
 #include "civetweb.h"
 
 static struct mg_callbacks s_callbacks;
 static struct mg_context* s_ctx;
 static std::map<rio2d::Hash, std::atomic_uintptr_t*> m_scripts;
+#else
+static std::map<rio2d::Hash, uintptr_t> m_scripts;
+#endif
 
 bool rio2d::Webserver::init(short port)
 {
+#ifndef NDEBUG
   char str[16];
   snprintf(str, sizeof(str), "%d", port);
   str[sizeof(str) - 1] = 0;
@@ -47,10 +53,14 @@ bool rio2d::Webserver::init(short port)
   s_ctx = mg_start(&s_callbacks, nullptr, options);
 
   return s_ctx != nullptr;
+#else
+  return true;
+#endif
 }
 
 void rio2d::Webserver::destroy()
 {
+#ifndef NDEBUG
   mg_stop(s_ctx);
   s_ctx = nullptr;
 
@@ -60,6 +70,13 @@ void rio2d::Webserver::destroy()
     delete script;
     delete it->second;
   }
+#else
+  for (auto it = m_scripts.begin(); it != m_scripts.end(); ++it)
+  {
+    auto script = (Script*)it->second;
+    delete script;
+  }
+#endif
 }
 
 static rio2d::Script* initWithFilename(const char* filename, char* error, size_t size)
@@ -94,6 +111,7 @@ static rio2d::Script* initWithFilename(const char* filename, char* error, size_t
   return script;
 }
 
+#ifndef NDEBUG
 static int serverError(struct mg_connection* conn, const char* reason)
 {
   // We're using 500 for all errors, but shouldn't :P
@@ -165,6 +183,7 @@ static int handleScriptUpload(struct mg_connection* conn, void* cbdata)
   mg_printf(conn, "Script successfully compiled!");
   return 1;
 }
+#endif
 
 rio2d::Script* rio2d::Webserver::getScript(const char* filename)
 {
@@ -174,7 +193,11 @@ rio2d::Script* rio2d::Webserver::getScript(const char* filename)
 
   if (it != m_scripts.end())
   {
+#ifndef NDEBUG
     return (Script*)it->second->load();
+#else
+    return (Script*)it->second;
+#endif
   }
 
   // Not found, try to load it from the file system.
@@ -186,6 +209,7 @@ rio2d::Script* rio2d::Webserver::getScript(const char* filename)
     return nullptr;
   }
 
+#ifndef NDEBUG
   // Ok, add it to the resource map.
   auto atomic = new (std::nothrow) std::atomic_uintptr_t((uintptr_t)script);
   auto pair = std::pair<rio2d::Hash, std::atomic_uintptr_t*>(hash, atomic);
@@ -212,6 +236,10 @@ rio2d::Script* rio2d::Webserver::getScript(const char* filename)
 
     mg_set_request_handler(s_ctx, path, handleScriptUpload, nullptr);
   }
+#else
+  auto pair = std::pair<rio2d::Hash, uintptr_t>(hash, (uintptr_t)script);
+  m_scripts.insert(pair);
+#endif
 
   // Ok!
   script->retain();

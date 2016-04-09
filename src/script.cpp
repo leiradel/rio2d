@@ -981,7 +981,8 @@ namespace // Anonymous namespace to hyde the implementation details
       m_bcSize = *bcSize = (size_t)counter.getPC();
       m_numGlobals = *numGlobals = counter.numGlobals();
 #else
-      *bcSize = (int)counter.getPC();
+      *bcSize = (size_t)counter.getPC();
+      *numGlobals = counter.numGlobals();
 #endif
 
       m_bytecode = new rio2d::Script::Bytecode[*bcSize];
