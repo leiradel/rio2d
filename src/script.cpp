@@ -175,6 +175,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kMoveby = 0x0e3c60b7U,
       kMoveto = 0x0e3c62ffU,
       kOpacity = 0x70951bfeU,
+      kPlace = 0x10269b4aU,
       kPosition = 0x4cef7abaU,
       kRotateby = 0x2737766fU,
       kRotateto = 0x273778b7U,
@@ -197,6 +198,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kMovebyIndex,
       kMovetoIndex,
       kOpacityIndex,
+      kPlaceIndex,
       kPositionIndex,
       kRotatebyIndex,
       kRotatetoIndex,
@@ -224,6 +226,7 @@ namespace // Anonymous namespace to hyde the implementation details
       case kMoveby:      return kMovebyIndex;
       case kMoveto:      return kMovetoIndex;
       case kOpacity:     return kOpacityIndex;
+      case kPlace:       return kPlaceIndex;
       case kPosition:    return kPositionIndex;
       case kRotateby:    return kRotatebyIndex;
       case kRotateto:    return kRotatetoIndex;
@@ -502,7 +505,7 @@ namespace // Anonymous namespace to hyde the implementation details
       case kDup:             CCLOG("%s%04x\t%08x\tdup", prefix, addr, bc->m_insn); bc += 1; break;
       case kFloor:           CCLOG("%s%04x\t%08x\tfloor", prefix, addr, bc->m_insn); bc += 1; break;
       case kGetLocal:        CCLOG("%s%04x\t%08x\tget_local l@%d", prefix, addr, bc->m_insn, bc[1].m_index); bc += 2; break;
-      case kGetProp:         CCLOG("%s%04x\t%08x\tget_field l@%d f@%d", prefix, addr, bc->m_insn, bc[1].m_index, bc[2].m_index); bc += 3; break;
+      case kGetProp:         CCLOG("%s%04x\t%08x\tget_property l@%d f@%d", prefix, addr, bc->m_insn, bc[1].m_index, bc[2].m_index); bc += 3; break;
       case kJnz:             CCLOG("%s%04x\t%08x\tjnz %04x", prefix, addr, bc->m_insn, bc[1].m_address); bc += 2; break;
       case kJump:            CCLOG("%s%04x\t%08x\tjump %04x", prefix, addr, bc->m_insn, bc[1].m_address); bc += 2; break;
       case kLogicalAnd:      CCLOG("%s%04x\t%08x\tand", prefix, addr, bc->m_insn); bc += 1; break;
@@ -516,7 +519,7 @@ namespace // Anonymous namespace to hyde the implementation details
       case kRand:            CCLOG("%s%04x\t%08x\trand", prefix, addr, bc->m_insn); bc += 1; break;
       case kRandRange:       CCLOG("%s%04x\t%08x\trandr", prefix, addr, bc->m_insn); bc += 1; break;
       case kSetLocal:        CCLOG("%s%04x\t%08x\tset_local l@%d", prefix, addr, bc->m_insn, bc[1].m_index); bc += 2; break;
-      case kSetProp:         CCLOG("%s%04x\t%08x\tset_field l@%d f@%d", prefix, addr, bc->m_insn, bc[1].m_index, bc[2].m_index); bc += 3; break;
+      case kSetProp:         CCLOG("%s%04x\t%08x\tset_property l@%d f@%d", prefix, addr, bc->m_insn, bc[1].m_index, bc[2].m_index); bc += 3; break;
       case kSignal:          CCLOG("%s%04x\t%08x\tsignal #%08x", prefix, addr, bc->m_insn, bc[1]); bc += 2; break;
       case kSpawn:           CCLOG("%s%04x\t%08x\tspawn %04x", prefix, addr, bc->m_insn, bc[1]); bc += 2; break;
       case kStop:            CCLOG("%s%04x\t%08x\tstop", prefix, addr, bc->m_insn); bc += 1; break;
@@ -1428,6 +1431,26 @@ namespace // Anonymous namespace to hyde the implementation details
         }
 
         emit(Insns::kSetProp, index, field);
+        break;
+
+      case Fields::kPlaceIndex:
+        match(Tokens::kIdentifier);
+        
+        if (parseExpression() != Tokens::kNumber)
+        {
+          raise(Errors::kTypeMismatch);
+          return;
+        }
+
+        match(',');
+
+        if (parseExpression() != Tokens::kNumber)
+        {
+          raise(Errors::kTypeMismatch);
+          return;
+        }
+
+        emit(Insns::kCallMethod, index, field);
         break;
 
       case Fields::kMovebyIndex:
@@ -2349,9 +2372,13 @@ namespace // Anonymous namespace to hyde the implementation details
 
     void callNodeMethod(Thread* thread, cocos2d::Node* target, rio2d::Script::Index index)
     {
-      (void)thread;
-      (void)target;
-      (void)index;
+      switch (index)
+      {
+      case Fields::kPlaceIndex:
+        target->setPosition(thread->m_stack[thread->m_sp - 2], thread->m_stack[thread->m_sp - 1]);
+        thread->m_sp -= 2;
+        break;
+      }
     }
 
     bool callMethod(Thread* thread)

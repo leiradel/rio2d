@@ -107,6 +107,7 @@ The `example` folder has a script which was used to test the game [Sky Defense](
     
     assign = ID '=' expression
            | ID '.' property '=' expression
+           | ID '.' method_2 expression ',' expression
            | ID '.' action_0 'in' expression 'secs' ( 'with' ease )?
            | ID '.' action_1 expression 'in' expression 'secs' ( 'with' ease )?
            | ID '.' action_2 expression ',' expression 'in' expression 'secs' ( 'with' ease )?
@@ -115,6 +116,8 @@ The `example` folder has a script which was used to test the game [Sky Defense](
     property = bboxheight | bboxwidth | flipx | flipy | height | opacity | rotation | scale | width | x | y
              | visible
              .
+    
+    method_2 = place .
     
     action_0 = fadein | fadeout .
     
