@@ -106,11 +106,19 @@ The `example` folder has a script which was used to test the game [Sky Defense](
     sequence = 'sequence' statement* 'end' .
     
     assign = ID '=' expression
-           | ID '.' ID '=' expression
-           | ID '.' ( fadein | fadeout ) 'in' expression 'secs' ( 'with' ease )?
-           | ID '.' ( rotateby | rotateto | scaleby | scaleto ) expression 'in' expression 'secs' ( 'with' ease )?
-           | ID '.' ( moveby | moveto ) expression ',' expression 'in' expression 'secs' ( 'with' ease )?
+           | ID '.' property '=' expression
+           | ID '.' action_0 'in' expression 'secs' ( 'with' ease )?
+           | ID '.' action_1 expression 'in' expression 'secs' ( 'with' ease )?
+           | ID '.' action_2 expression ',' expression 'in' expression 'secs' ( 'with' ease )?
            .
+    
+    property = bboxheight | bboxwidth | height | opacity | rotation | scale | width | x | y | visible .
+    
+    action_0 = fadein | fadeout .
+    
+    action_1 = rotateby | rotateto | scaleby | scaleto .
+    
+    action_2 = moveby | moveto .
     
     ease = backin | backinout | backout | bouncein | bounceinout | bounceout | circin | circinout | circout
          | cubicin | cubicinout | cubicout | elasticin | elasticinout | elasticout | expin | expinout | expout
@@ -142,7 +150,7 @@ The `example` folder has a script which was used to test the game [Sky Defense](
              | 'true'
              | 'false'
              | '(' expression ')'
-             | ID ( '.' ID )?
+             | ID ( '.' property )?
              | 'rand' ( '(' expression ',' expression ')' )?
              | 'floor' '(' expression ')'
              | 'ceil' '(' expression ')'
