@@ -93,7 +93,7 @@ The `example` folder has a script which was used to test the game [Sky Defense](
     
     subroutine = 'sub' ID '(' ID 'as' 'node' ( ',' ID 'as' type )* ')' statement* 'end' .
     
-    type = 'node' | 'number' | 'size' | 'vec2' .
+    type = 'node' | 'number' | 'size' | 'vec2' | 'frames' .
     
     statement = forever | parallel | repeat | sequence | assign | signal | pause .
     
@@ -109,6 +109,7 @@ The `example` folder has a script which was used to test the game [Sky Defense](
            | ID '.' property '=' expression
            | ID '.' method_2 expression ',' expression
            | ID '.' method_3 expression ',' expression ',' expression
+           | ID '.' 'setframe' ID ',' expression
            | ID '.' action_0 'in' expression 'secs' ( 'with' ease )?
            | ID '.' action_1 expression 'in' expression 'secs' ( 'with' ease )?
            | ID '.' action_2 expression ',' expression 'in' expression 'secs' ( 'with' ease )?
