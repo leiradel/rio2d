@@ -187,24 +187,24 @@ namespace // Anonymous namespace to hyde the implementation details
       kY = 0x0002b61eU,
       // Indices
       kBboxheightIndex = 0,
-      kBboxwidthIndex = 1,
-      kFadeinIndex = 2,
-      kFadeoutIndex = 3,
-      kHeightIndex = 4,
-      kMovebyIndex = 5,
-      kMovetoIndex = 6,
-      kOpacityIndex = 7,
-      kPositionIndex = 8,
-      kRotatebyIndex = 9,
-      kRotatetoIndex = 10,
-      kRotationIndex = 11,
-      kScaleIndex = 12,
-      kScalebyIndex = 13,
-      kScaletoIndex = 14,
-      kVisibleIndex = 15,
-      kWidthIndex = 16,
-      kXIndex = 17,
-      kYIndex = 18,
+      kBboxwidthIndex,
+      kFadeinIndex,
+      kFadeoutIndex,
+      kHeightIndex,
+      kMovebyIndex,
+      kMovetoIndex,
+      kOpacityIndex,
+      kPositionIndex,
+      kRotatebyIndex,
+      kRotatetoIndex,
+      kRotationIndex,
+      kScaleIndex,
+      kScalebyIndex,
+      kScaletoIndex,
+      kVisibleIndex,
+      kWidthIndex,
+      kXIndex,
+      kYIndex,
     };
 
     static inline rio2d::Script::Index index(rio2d::Hash hash)
@@ -274,36 +274,36 @@ namespace // Anonymous namespace to hyde the implementation details
       kSineout = 0x9516638cU,
       // Indices
       kBackinIndex = 0,
-      kBackinoutIndex = 1,
-      kBackoutIndex = 2,
-      kBounceinIndex = 3,
-      kBounceinoutIndex = 4,
-      kBounceoutIndex = 5,
-      kCircinIndex = 6,
-      kCircinoutIndex = 7,
-      kCircoutIndex = 8,
-      kCubicinIndex = 9,
-      kCubicinoutIndex = 10,
-      kCubicoutIndex = 11,
-      kElasticinIndex = 12,
-      kElasticinoutIndex = 13,
-      kElasticoutIndex = 14,
-      kExpinIndex = 15,
-      kExpinoutIndex = 16,
-      kExpoutIndex = 17,
-      kLinearIndex = 18,
-      kQuadinIndex = 19,
-      kQuadinoutIndex = 20,
-      kQuadoutIndex = 21,
-      kQuarticinIndex = 22,
-      kQuarticinoutIndex = 23,
-      kQuarticoutIndex = 24,
-      kQuinticinIndex = 25,
-      kQuinticinoutIndex = 26,
-      kQuinticoutIndex = 27,
-      kSineinIndex = 28,
-      kSineinoutIndex = 29,
-      kSineoutIndex = 30,
+      kBackinoutIndex,
+      kBackoutIndex,
+      kBounceinIndex,
+      kBounceinoutIndex,
+      kBounceoutIndex,
+      kCircinIndex,
+      kCircinoutIndex,
+      kCircoutIndex,
+      kCubicinIndex,
+      kCubicinoutIndex,
+      kCubicoutIndex,
+      kElasticinIndex,
+      kElasticinoutIndex,
+      kElasticoutIndex,
+      kExpinIndex,
+      kExpinoutIndex,
+      kExpoutIndex,
+      kLinearIndex,
+      kQuadinIndex,
+      kQuadinoutIndex,
+      kQuadoutIndex,
+      kQuarticinIndex,
+      kQuarticinoutIndex,
+      kQuarticoutIndex,
+      kQuinticinIndex,
+      kQuinticinoutIndex,
+      kQuinticoutIndex,
+      kSineinIndex,
+      kSineinoutIndex,
+      kSineoutIndex,
     };
 
     static inline rio2d::Script::Index index(rio2d::Hash hash)
@@ -394,42 +394,42 @@ namespace // Anonymous namespace to hyde the implementation details
   {
     enum
     {
-      kAdd = 0,
-      kCallMethod = 1,
-      kCeil = 2,
-      kCmpEqual = 3,
-      kCmpGreater = 4,
-      kCmpGreaterEqual = 5,
-      kCmpLess = 6,
-      kCmpLessEqual = 7,
-      kCmpNotEqual = 8,
-      kDiv = 9,
-      kDrop = 10,
-      kDup = 11,
-      kFloor = 12,
-      kGetLocal = 13,
-      kGetProp = 14,
-      kJnz = 15,
-      kJump = 16,
-      kLogicalAnd = 17,
-      kLogicalNot = 18,
-      kLogicalOr = 19,
-      kModulus = 20,
-      kMul = 21,
-      kNeg = 22,
-      kPause = 23,
-      kPush = 24,
-      kRand = 25,
-      kRandRange = 26,
-      kSetLocal = 27,
-      kSetProp = 28,
-      kSignal = 29,
-      kSpawn = 30,
-      kStop = 31,
-      kSub = 32,
-      kTrunc = 33,
-      kVaryAbs = 34,
-      kVaryRel = 35,
+      kAdd,
+      kCallMethod,
+      kCeil,
+      kCmpEqual,
+      kCmpGreater,
+      kCmpGreaterEqual,
+      kCmpLess,
+      kCmpLessEqual,
+      kCmpNotEqual,
+      kDiv,
+      kDrop,
+      kDup,
+      kFloor,
+      kGetLocal,
+      kGetProp,
+      kJnz,
+      kJump,
+      kLogicalAnd,
+      kLogicalNot,
+      kLogicalOr,
+      kModulus,
+      kMul,
+      kNeg,
+      kPause,
+      kPush,
+      kRand,
+      kRandRange,
+      kSetLocal,
+      kSetProp,
+      kSignal,
+      kSpawn,
+      kStop,
+      kSub,
+      kTrunc,
+      kVaryAbs,
+      kVaryRel,
     };
 
     static inline size_t size(rio2d::Script::Insn insn)
@@ -2714,6 +2714,16 @@ namespace // Anonymous namespace to hyde the implementation details
       return true;
     }
 
+    inline void setField(cocos2d::Node* node, rio2d::Script::Index field, float value)
+    {
+      switch (field)
+      {
+      case Fields::kOpacityIndex:  node->setOpacity(value); break;
+      case Fields::kRotationIndex: node->setRotation(value); break;
+      case Fields::kScaleIndex:    node->setScale(value); break;
+      }
+    }
+
     bool varyAbs(Thread* thread)
     {
       struct Args1
@@ -2744,6 +2754,8 @@ namespace // Anonymous namespace to hyde the implementation details
       switch (field)
       {
       case Fields::kOpacityIndex:
+      case Fields::kRotationIndex:
+      case Fields::kScaleIndex:
       {
         Args1* args = (Args1*)((char*)(thread->m_stack + thread->m_sp) - sizeof(Args1));
         args->m_sourceT += thread->m_dt;
@@ -2751,12 +2763,12 @@ namespace // Anonymous namespace to hyde the implementation details
         if (args->m_sourceT < args->m_destT)
         {
           rio2d::Script::Number time = Easing::evaluate(ease, args->m_sourceT / args->m_destT);
-          node->setOpacity(args->m_sourceA + time * (args->m_destA - args->m_sourceA));
+          setField(node, field, args->m_sourceA + time * (args->m_destA - args->m_sourceA));
           return false;
         }
         else
         {
-          node->setOpacity(args->m_destA);
+          setField(node, field, args->m_destA);
           thread->m_dt = args->m_sourceT - args->m_destT;
           thread->m_sp -= 4;
           thread->m_pc += 3;
@@ -2784,52 +2796,6 @@ namespace // Anonymous namespace to hyde the implementation details
           node->setPositionY(args->m_destB);
           thread->m_dt = args->m_sourceT - args->m_destT;
           thread->m_sp -= 6;
-          thread->m_pc += 3;
-          return true;
-        }
-
-        break;
-      }
-
-      case Fields::kRotationIndex:
-      {
-        Args1* args = (Args1*)((char*)(thread->m_stack + thread->m_sp) - sizeof(Args1));
-        args->m_sourceT += thread->m_dt;
-
-        if (args->m_sourceT < args->m_destT)
-        {
-          rio2d::Script::Number time = Easing::evaluate(ease, args->m_sourceT / args->m_destT);
-          node->setRotation(args->m_sourceA + time * (args->m_destA - args->m_sourceA));
-          return false;
-        }
-        else
-        {
-          node->setRotation(args->m_destA);
-          thread->m_dt = args->m_sourceT - args->m_destT;
-          thread->m_sp -= 4;
-          thread->m_pc += 3;
-          return true;
-        }
-
-        break;
-      }
-
-      case Fields::kScaleIndex:
-      {
-        Args1* args = (Args1*)((char*)(thread->m_stack + thread->m_sp) - sizeof(Args1));
-        args->m_sourceT += thread->m_dt;
-
-        if (args->m_sourceT < args->m_destT)
-        {
-          rio2d::Script::Number time = Easing::evaluate(ease, args->m_sourceT / args->m_destT);
-          node->setScale(args->m_sourceA + time * (args->m_destA - args->m_sourceA));
-          return false;
-        }
-        else
-        {
-          node->setScale(args->m_destA);
-          thread->m_dt = args->m_sourceT - args->m_destT;
-          thread->m_sp -= 4;
           thread->m_pc += 3;
           return true;
         }
@@ -2896,28 +2862,6 @@ namespace // Anonymous namespace to hyde the implementation details
       }
 
       case Fields::kRotationIndex:
-      {
-        Args1* args = (Args1*)((char*)(thread->m_stack + thread->m_sp) - sizeof(Args1));
-        args->m_sourceT += thread->m_dt;
-
-        if (args->m_sourceT < args->m_destT)
-        {
-          rio2d::Script::Number time = Easing::evaluate(ease, args->m_sourceT / args->m_destT);
-          node->setRotation(args->m_sourceA + time * args->m_ratioA);
-          return false;
-        }
-        else
-        {
-          node->setRotation(args->m_sourceA + args->m_ratioA);
-          thread->m_dt = args->m_sourceT - args->m_destT;
-          thread->m_sp -= 4;
-          thread->m_pc += 3;
-          return true;
-        }
-
-        break;
-      }
-
       case Fields::kScaleIndex:
       {
         Args1* args = (Args1*)((char*)(thread->m_stack + thread->m_sp) - sizeof(Args1));
@@ -2926,12 +2870,12 @@ namespace // Anonymous namespace to hyde the implementation details
         if (args->m_sourceT < args->m_destT)
         {
           rio2d::Script::Number time = Easing::evaluate(ease, args->m_sourceT / args->m_destT);
-          node->setScale(args->m_sourceA + time * args->m_ratioA);
+          setField(node, field, args->m_sourceA + time * args->m_ratioA);
           return false;
         }
         else
         {
-          node->setScale(args->m_sourceA + args->m_ratioA);
+          setField(node, field, args->m_sourceA + args->m_ratioA);
           thread->m_dt = args->m_sourceT - args->m_destT;
           thread->m_sp -= 4;
           thread->m_pc += 3;
