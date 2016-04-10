@@ -127,6 +127,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kFalse = 0x0f6bcef0U,
       kFloor = 0x0f71e367U,
       kForever = 0xbaa8bf3eU,
+      kFrames = 0xfe132c43U,
       kGreaterEqual = 1,
       kIdentifier = 2,
       kIn = 0x0059783cU,
@@ -187,6 +188,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kScale = 0x1057f68dU,
       kScaleby = 0x862fdae8U,
       kScaleto = 0x862fdd30U,
+      kSetframe = 0x120c3ddcU,
       kSkew = 0x7c9df3bfU,
       kSkewby = 0x1be9ec9aU,
       kSkewto = 0x1be9eee2U,
@@ -222,6 +224,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kScaleIndex,
       kScalebyIndex,
       kScaletoIndex,
+      kSetframeIndex,
       kSkewIndex,
       kSkewbyIndex,
       kSkewtoIndex,
@@ -262,6 +265,7 @@ namespace // Anonymous namespace to hyde the implementation details
       case kScale:       return kScaleIndex;
       case kScaleby:     return kScalebyIndex;
       case kScaleto:     return kScaletoIndex;
+      case kSetframe:    return kSetframeIndex;
       case kSkew:        return kSkewIndex;
       case kSkewby:      return kSkewbyIndex;
       case kSkewto:      return kSkewtoIndex;
@@ -465,6 +469,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kPush,
       kRand,
       kRandRange,
+      kSetFrame,
       kSetLocal,
       kSetProp,
       kSignal,
@@ -507,6 +512,7 @@ namespace // Anonymous namespace to hyde the implementation details
         2, // kPush
         1, // kRand
         1, // kRandRange
+        3, // kSetFrame
         2, // kSetLocal
         3, // kSetProp
         2, // kSignal
@@ -518,7 +524,7 @@ namespace // Anonymous namespace to hyde the implementation details
         4, // kVaryRel
       };
 
-      CCASSERT(insn >= 0 && insn < 36, "Invalid instruction");
+      CCASSERT(insn >= 0 && insn < sizeof(sizes) / sizeof(sizes[0]), "Invalid instruction");
       return sizes[insn];
     };
 
@@ -555,6 +561,7 @@ namespace // Anonymous namespace to hyde the implementation details
       case kRand:            CCLOG("%s%04x\t%08x\trand", prefix, addr, bc->m_insn); bc += 1; break;
       case kRandRange:       CCLOG("%s%04x\t%08x\trandr", prefix, addr, bc->m_insn); bc += 1; break;
       case kSetLocal:        CCLOG("%s%04x\t%08x\tset_local l@%d", prefix, addr, bc->m_insn, bc[1].m_index); bc += 2; break;
+      case kSetFrame:        CCLOG("%s%04x\t%08x\tset_frame l@%d l@%d", prefix, addr, bc->m_insn, bc[1].m_index, bc[2].m_index); bc += 3; break;
       case kSetProp:         CCLOG("%s%04x\t%08x\tset_property l@%d f@%d", prefix, addr, bc->m_insn, bc[1].m_index, bc[2].m_index); bc += 3; break;
       case kSignal:          CCLOG("%s%04x\t%08x\tsignal #%08x", prefix, addr, bc->m_insn, bc[1]); bc += 2; break;
       case kSpawn:           CCLOG("%s%04x\t%08x\tspawn %04x", prefix, addr, bc->m_insn, bc[1]); bc += 2; break;
@@ -919,6 +926,7 @@ namespace // Anonymous namespace to hyde the implementation details
 
       case Insns::kCallMethod:
       case Insns::kGetProp:
+      case Insns::kSetFrame:
       case Insns::kSetProp:
         m_bytecode[m_pc++].m_insn = insn;
         m_bytecode[m_pc++].m_index = va_arg(args, rio2d::Script::Index);
@@ -1131,6 +1139,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kFalse:
         case Tokens::kFloor:
         case Tokens::kForever:
+        case Tokens::kFrames:
         case Tokens::kIn:
         case Tokens::kMod:
         case Tokens::kMove:
@@ -1428,6 +1437,9 @@ namespace // Anonymous namespace to hyde the implementation details
     void emitSetNodeProp(rio2d::Script::Index index)
     {
       rio2d::Script::Index field = Fields::index(m_hash);
+      rio2d::Hash type;
+      rio2d::Script::Index frames;
+      int error;
 
       switch (field)
       {
@@ -1465,6 +1477,29 @@ namespace // Anonymous namespace to hyde the implementation details
         match(Tokens::kIdentifier);
         parseExpressions(2, Tokens::kNumber);
         emit(Insns::kCallMethod, index, field);
+        break;
+
+      case Fields::kSetframeIndex:
+        match(Tokens::kIdentifier);
+        error = m_emitter->getType(m_hash, &type);
+
+        if (error != Errors::kOk)
+        {
+          raise(Errors::kUnknownIdentifier);
+          return;
+        }
+
+        if (type != Tokens::kFrames)
+        {
+          raise(Errors::kTypeMismatch);
+          return;
+        }
+
+        m_emitter->getIndex(m_hash, &frames);
+        match(Tokens::kIdentifier);
+        match(',');
+        parseExpressions(1, Tokens::kNumber);
+        emit(Insns::kSetFrame, index, frames);
         break;
 
       case Fields::kTintIndex:
@@ -1655,6 +1690,7 @@ namespace // Anonymous namespace to hyde the implementation details
 
         switch (type)
         {
+        case Tokens::kFrames:
         case Tokens::kNode:
         case Tokens::kNumber:
         case Tokens::kSize:
@@ -2361,6 +2397,7 @@ namespace // Anonymous namespace to hyde the implementation details
       {
         switch (local->m_type)
         {
+        case Tokens::kFrames: local->m_pointer = va_arg(args, rio2d::Script::Frames*); break;
         case Tokens::kNode:   local->m_pointer = va_arg(args, cocos2d::Node*); break;
         case Tokens::kNumber: local->m_number = (rio2d::Script::Number)va_arg(args, double); break;
         case Tokens::kSize:   local->m_pointer = va_arg(args, cocos2d::Size*); break;
@@ -2695,6 +2732,21 @@ namespace // Anonymous namespace to hyde the implementation details
     {
       rio2d::Script::LocalVar* local = m_locals + m_bytecode[thread->m_pc++].m_index;
       local->m_number = thread->m_stack[--thread->m_sp];
+      return true;
+    }
+
+    bool setFrame(Thread* thread)
+    {
+      rio2d::Script::LocalVar* local = m_locals + m_bytecode[thread->m_pc++].m_index;
+      rio2d::Script::LocalVar* frms = m_locals + m_bytecode[thread->m_pc++].m_index;
+
+      auto node = (cocos2d::Node*)local->m_pointer;
+      auto obj = dynamic_cast<cocos2d::Sprite*>(node);
+      auto frames = (rio2d::Script::Frames*)frms->m_pointer;
+      auto index = (size_t)thread->m_stack[--thread->m_sp];
+
+      CC_ASSERT(index >= 0 && index < frames->size());
+      obj->setSpriteFrame(frames->at(index));
       return true;
     }
 
@@ -3058,6 +3110,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Insns::kRand:            cont = rand(thread); break;
         case Insns::kRandRange:       cont = randRange(thread); break;
         case Insns::kSetLocal:        cont = setLocal(thread); break;
+        case Insns::kSetFrame:        cont = setFrame(thread); break;
         case Insns::kSetProp:         cont = setProp(thread); break;
         case Insns::kSignal:          cont = signal(thread); break;
         case Insns::kSpawn:           cont = spawn(thread); break;

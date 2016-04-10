@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdarg.h>
+#include <vector>
 
 #include "cocos2d.h"
 
@@ -55,6 +56,8 @@ namespace rio2d
       // Maximum stack depth.
       kMaxStack = 16,
     };
+
+    typedef std::vector<cocos2d::SpriteFrame*> Frames;
 
     typedef uint32_t Insn;
     typedef int      Index;

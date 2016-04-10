@@ -11,7 +11,7 @@ sub growBomb(target as node, clickPos as vec2)
     end
     
     sequence
-      pause 2
+      pause 2 secs
       target.opacity = 255
     end
   end
@@ -85,4 +85,49 @@ sub shockWave(target as node, bomb as node)
       target.visible = false
     end
   end
+end
+
+sub groundHit(target as node, screenSize as size, frms as frames)
+  target.moveby 0, screenSize.height * 0.12 in 0 secs
+  target.setframe frms, 0
+  pause 0.1 secs
+  target.setframe frms, 1
+  pause 0.1 secs
+  target.setframe frms, 2
+  pause 0.1 secs
+  target.setframe frms, 3
+  pause 0.1 secs
+  target.setframe frms, 4
+  pause 0.1 secs
+  target.setframe frms, 5
+  pause 0.1 secs
+  target.setframe frms, 6
+  pause 0.1 secs
+  target.setframe frms, 7
+  pause 0.1 secs
+  target.setframe frms, 8
+  pause 0.1 secs
+  target.setframe frms, 9
+  pause 0.1 secs
+  target.visible = false
+end
+
+sub explosion(target as node, frms as frames)
+  x = 0.0714285714285714
+  
+  target.setframe frms, 0
+  pause x secs
+  target.setframe frms, 1
+  pause x secs
+  target.setframe frms, 2
+  pause x secs
+  target.setframe frms, 3
+  pause x secs
+  target.setframe frms, 4
+  pause x secs
+  target.setframe frms, 5
+  pause x secs
+  target.setframe frms, 6
+  pause x secs
+  target.visible = false
 end
