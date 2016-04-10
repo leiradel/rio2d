@@ -112,7 +112,9 @@ The `example` folder has a script which was used to test the game [Sky Defense](
            | ID '.' action_2 expression ',' expression 'in' expression 'secs' ( 'with' ease )?
            .
     
-    property = bboxheight | bboxwidth | height | opacity | rotation | scale | width | x | y | visible .
+    property = bboxheight | bboxwidth | flipx | flipy | height | opacity | rotation | scale | width | x | y
+             | visible
+             .
     
     action_0 = fadein | fadeout .
     
@@ -125,8 +127,6 @@ The `example` folder has a script which was used to test the game [Sky Defense](
          | linear | quadin | quadinout | quadout | quarticin | quarticinout | quarticout
          | quinticin | quinticinout | quinticout | sinein | sineinout | sineout
          .
-    
-    assign = 'let' ID '=' expression .
     
     signal = 'signal' STR .
     

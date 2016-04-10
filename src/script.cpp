@@ -169,6 +169,8 @@ namespace // Anonymous namespace to hyde the implementation details
       kBboxwidth = 0x7c035ed0U,
       kFadein = 0xfce10f4cU,
       kFadeout = 0x990313adU,
+      kFlipx = 0x0f71ca08U,
+      kFlipy = 0x0f71ca09U,
       kHeight = 0x01d688deU,
       kMoveby = 0x0e3c60b7U,
       kMoveto = 0x0e3c62ffU,
@@ -189,6 +191,8 @@ namespace // Anonymous namespace to hyde the implementation details
       kBboxwidthIndex,
       kFadeinIndex,
       kFadeoutIndex,
+      kFlipxIndex,
+      kFlipyIndex,
       kHeightIndex,
       kMovebyIndex,
       kMovetoIndex,
@@ -214,6 +218,8 @@ namespace // Anonymous namespace to hyde the implementation details
       case kBboxwidth:   return kBboxwidthIndex;
       case kFadein:      return kFadeinIndex;
       case kFadeout:     return kFadeoutIndex;
+      case kFlipx:       return kFlipxIndex;
+      case kFlipy:       return kFlipyIndex;
       case kHeight:      return kHeightIndex;
       case kMoveby:      return kMovebyIndex;
       case kMoveto:      return kMovetoIndex;
@@ -1409,6 +1415,8 @@ namespace // Anonymous namespace to hyde the implementation details
         emit(Insns::kSetProp, index, field);
         break;
 
+      case Fields::kFlipxIndex:
+      case Fields::kFlipyIndex:
       case Fields::kVisibleIndex:
         match(Tokens::kIdentifier);
         match('=');
@@ -1513,6 +1521,8 @@ namespace // Anonymous namespace to hyde the implementation details
         emit(Insns::kGetProp, index, field);
         return Tokens::kNumber;
 
+      case Fields::kFlipxIndex:
+      case Fields::kFlipyIndex:
       case Fields::kVisibleIndex:
         match(Tokens::kIdentifier);
         emit(Insns::kGetProp, index, field);
@@ -2337,11 +2347,11 @@ namespace // Anonymous namespace to hyde the implementation details
       return true; // Continue running
     }
 
-    void callNodeMethod(Thread* thread, cocos2d::Node* target, rio2d::Hash hash)
+    void callNodeMethod(Thread* thread, cocos2d::Node* target, rio2d::Script::Index index)
     {
       (void)thread;
       (void)target;
-      (void)hash;
+      (void)index;
     }
 
     bool callMethod(Thread* thread)
@@ -2451,6 +2461,8 @@ namespace // Anonymous namespace to hyde the implementation details
       {
       case Fields::kBboxheightIndex: value = obj->getBoundingBox().size.height; break;
       case Fields::kBboxwidthIndex:  value = obj->getBoundingBox().size.width; break;
+      case Fields::kFlipxIndex:      value = dynamic_cast<cocos2d::Sprite*>(obj)->isFlippedX() ? 1.0f : 0.0f; break;
+      case Fields::kFlipyIndex:      value = dynamic_cast<cocos2d::Sprite*>(obj)->isFlippedY() ? 1.0f : 0.0f; break;
       case Fields::kHeightIndex:     value = obj->getContentSize().height; break;
       case Fields::kOpacityIndex:    value = obj->getOpacity(); break;
       case Fields::kRotationIndex:   value = obj->getRotation(); break;
@@ -2633,6 +2645,8 @@ namespace // Anonymous namespace to hyde the implementation details
 
       switch (field)
       {
+      case Fields::kFlipxIndex:    dynamic_cast<cocos2d::Sprite*>(obj)->setFlippedX(value != 0.0f); break;
+      case Fields::kFlipyIndex:    dynamic_cast<cocos2d::Sprite*>(obj)->setFlippedY(value != 0.0f); break;
       case Fields::kOpacityIndex:  obj->setOpacity(value); break;
       case Fields::kRotationIndex: obj->setRotation(value); break;
       case Fields::kScaleIndex:    obj->setScale(value); break;
