@@ -101,39 +101,46 @@ The `example` folder has a script which was used to test the game [Sky Defense](
     
     parallel = 'parallel' ( forever | parallel | repeat | sequence )* 'end' .
     
-    repeat = 'repeat' expression statement* 'end' .
+    repeat = 'repeat' expression 'times' statement* 'end' .
     
     sequence = 'sequence' statement* 'end' .
     
     assign = ID '=' expression
            | ID '.' property '=' expression
            | ID '.' method_2 expression ',' expression
+           | ID '.' method_3 expression ',' expression ',' expression
            | ID '.' action_0 'in' expression 'secs' ( 'with' ease )?
            | ID '.' action_1 expression 'in' expression 'secs' ( 'with' ease )?
            | ID '.' action_2 expression ',' expression 'in' expression 'secs' ( 'with' ease )?
+           | ID '.' action_3 expression ',' expression ',' expression 'in' expression 'secs' ( 'with' ease )?
            .
     
-    property = bboxheight | bboxwidth | flipx | flipy | height | opacity | rotation | scale | width | x | y
-             | visible
+    property = 'bboxheight' | 'bboxwidth' | 'blue' | 'flipx' | 'flipy' | 'green' | 'height' | 'opacity' | 'red'
+             | 'rotation' | 'scale' | 'width' | 'x' | 'y' | 'visible'
              .
     
-    method_2 = place .
+    method_2 = 'place' .
     
-    action_0 = fadein | fadeout .
+    method_3 = 'tint' .
     
-    action_1 = rotateby | rotateto | scaleby | scaleto .
+    action_0 = 'fadein' | 'fadeout' .
     
-    action_2 = moveby | moveto .
+    action_1 = 'fadeto' | 'rotateby' | 'rotateto' | 'scaleby' | 'scaleto' .
     
-    ease = backin | backinout | backout | bouncein | bounceinout | bounceout | circin | circinout | circout
-         | cubicin | cubicinout | cubicout | elasticin | elasticinout | elasticout | expin | expinout | expout
-         | linear | quadin | quadinout | quadout | quarticin | quarticinout | quarticout
-         | quinticin | quinticinout | quinticout | sinein | sineinout | sineout
+    action_2 = 'moveby' | 'moveto' .
+    
+    action_3 = 'tintby' | 'tintto' .
+    
+    ease = 'backin' | 'backinout' | 'backout' | 'bouncein' | 'bounceinout' | 'bounceout' | 'circin' | 'circinout'
+         | 'circout' | 'cubicin' | 'cubicinout' | 'cubicout' | 'elasticin' | 'elasticinout' | 'elasticout'
+         | 'expin' | 'expinout' | 'expout' | 'linear' | 'quadin' | 'quadinout' | 'quadout' | 'quarticin'
+         | 'quarticinout' | 'quarticout' | 'quinticin' | 'quinticinout' | 'quinticout' | 'sinein' | 'sineinout'
+         | 'sineout'
          .
     
     signal = 'signal' STR .
     
-    pause = 'pause' expression .
+    pause = 'pause' expression 'secs' .
     
     expression = logica_lor .
     

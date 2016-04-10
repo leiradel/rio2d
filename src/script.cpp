@@ -167,22 +167,34 @@ namespace // Anonymous namespace to hyde the implementation details
       // Hashes
       kBboxheight = 0xd92bfc69U,
       kBboxwidth = 0x7c035ed0U,
+      kBlue = 0x7c94a78dU,
       kFadein = 0xfce10f4cU,
       kFadeout = 0x990313adU,
+      kFadeto = 0xfce110b8U,
       kFlipx = 0x0f71ca08U,
       kFlipy = 0x0f71ca09U,
+      kGreen = 0x0f871a56U,
       kHeight = 0x01d688deU,
       kMoveby = 0x0e3c60b7U,
       kMoveto = 0x0e3c62ffU,
       kOpacity = 0x70951bfeU,
       kPlace = 0x10269b4aU,
       kPosition = 0x4cef7abaU,
+      kRed = 0x0b88a540U,
       kRotateby = 0x2737766fU,
       kRotateto = 0x273778b7U,
       kRotation = 0x27378915U,
       kScale = 0x1057f68dU,
       kScaleby = 0x862fdae8U,
       kScaleto = 0x862fdd30U,
+      kSkew = 0x7c9df3bfU,
+      kSkewby = 0x1be9ec9aU,
+      kSkewto = 0x1be9eee2U,
+      kSkewx = 0x105c6c17U,
+      kSkewy = 0x105c6c18U,
+      kTint = 0x7c9e78c4U,
+      kTintby = 0x1e1fc6dfU,
+      kTintto = 0x1e1fc927U,
       kVisible = 0x7c618d53U,
       kWidth = 0x10a3b0a5U,
       kX = 0x0002b61dU,
@@ -190,22 +202,34 @@ namespace // Anonymous namespace to hyde the implementation details
       // Indices
       kBboxheightIndex = 0,
       kBboxwidthIndex,
+      kBlueIndex,
       kFadeinIndex,
       kFadeoutIndex,
+      kFadetoIndex,
       kFlipxIndex,
       kFlipyIndex,
+      kGreenIndex,
       kHeightIndex,
       kMovebyIndex,
       kMovetoIndex,
       kOpacityIndex,
       kPlaceIndex,
       kPositionIndex,
+      kRedIndex,
       kRotatebyIndex,
       kRotatetoIndex,
       kRotationIndex,
       kScaleIndex,
       kScalebyIndex,
       kScaletoIndex,
+      kSkewIndex,
+      kSkewbyIndex,
+      kSkewtoIndex,
+      kSkewxIndex,
+      kSkewyIndex,
+      kTintIndex,
+      kTintbyIndex,
+      kTinttoIndex,
       kVisibleIndex,
       kWidthIndex,
       kXIndex,
@@ -218,22 +242,34 @@ namespace // Anonymous namespace to hyde the implementation details
       {
       case kBboxheight:  return kBboxheightIndex;
       case kBboxwidth:   return kBboxwidthIndex;
+      case kBlue:        return kBlueIndex;
       case kFadein:      return kFadeinIndex;
       case kFadeout:     return kFadeoutIndex;
+      case kFadeto:      return kFadetoIndex;
       case kFlipx:       return kFlipxIndex;
       case kFlipy:       return kFlipyIndex;
+      case kGreen:       return kGreenIndex;
       case kHeight:      return kHeightIndex;
       case kMoveby:      return kMovebyIndex;
       case kMoveto:      return kMovetoIndex;
       case kOpacity:     return kOpacityIndex;
       case kPlace:       return kPlaceIndex;
       case kPosition:    return kPositionIndex;
+      case kRed:         return kRedIndex;
       case kRotateby:    return kRotatebyIndex;
       case kRotateto:    return kRotatetoIndex;
       case kRotation:    return kRotationIndex;
       case kScale:       return kScaleIndex;
       case kScaleby:     return kScalebyIndex;
       case kScaleto:     return kScaletoIndex;
+      case kSkew:        return kSkewIndex;
+      case kSkewby:      return kSkewbyIndex;
+      case kSkewto:      return kSkewtoIndex;
+      case kSkewx:       return kSkewxIndex;
+      case kSkewy:       return kSkewyIndex;
+      case kTint:        return kTintIndex;
+      case kTintby:      return kTintbyIndex;
+      case kTintto:      return kTinttoIndex;
       case kVisible:     return kVisibleIndex;
       case kWidth:       return kWidthIndex;
       case kX:           return kXIndex;
@@ -1303,74 +1339,72 @@ namespace // Anonymous namespace to hyde the implementation details
       {
       case Fields::kFadeinIndex:
         field = Fields::kOpacityIndex;
-        params = 0;
         emit(Insns::kPush, 0.0f);
         emit(Insns::kPush, 255.0f);
+        params = 0;
         break;
 
       case Fields::kFadeoutIndex:
         field = Fields::kOpacityIndex;
-        params = 0;
         emit(Insns::kPush, 255.0f);
         emit(Insns::kPush, 0.0f);
+        params = 0;
+        break;
+
+      case Fields::kFadetoIndex:
+        field = Fields::kOpacityIndex;
+        emit(Insns::kGetProp, index, field);
+        params = 1;
         break;
 
       case Fields::kRotatebyIndex:
       case Fields::kRotatetoIndex:
         field = Fields::kRotationIndex;
+        emit(Insns::kGetProp, index, field);
         params = 1;
-        emit(Insns::kGetProp, index, Fields::kRotationIndex);
         break;
 
       case Fields::kScalebyIndex:
       case Fields::kScaletoIndex:
         field = Fields::kScaleIndex;
+        emit(Insns::kGetProp, index, field);
         params = 1;
-        emit(Insns::kGetProp, index, Fields::kScaleIndex);
         break;
 
       case Fields::kMovebyIndex:
       case Fields::kMovetoIndex:
         field = Fields::kPositionIndex;
-        params = 2;
         emit(Insns::kGetProp, index, Fields::kXIndex);
         emit(Insns::kGetProp, index, Fields::kYIndex);
+        params = 2;
+        break;
+
+      case Fields::kSkewbyIndex:
+      case Fields::kSkewtoIndex:
+        field = Fields::kSkewIndex;
+        emit(Insns::kGetProp, index, Fields::kSkewxIndex);
+        emit(Insns::kGetProp, index, Fields::kSkewyIndex);
+        params = 2;
+        break;
+
+      case Fields::kTintbyIndex:
+      case Fields::kTinttoIndex:
+        field = Fields::kTintIndex;
+        emit(Insns::kGetProp, index, Fields::kRedIndex);
+        emit(Insns::kGetProp, index, Fields::kGreenIndex);
+        emit(Insns::kGetProp, index, Fields::kBlueIndex);
+        params = 3;
         break;
       }
 
       match(Tokens::kIdentifier);
-
-      if (params-- != 0)
-      {
-        if (parseExpression() != Tokens::kNumber)
-        {
-          raise(Errors::kTypeMismatch);
-          return;
-        }
-
-        while (params-- != 0)
-        {
-          match(',');
-
-          if (parseExpression() != Tokens::kNumber)
-          {
-            raise(Errors::kTypeMismatch);
-            return;
-          }
-        }
-      }
-
+      parseExpressions(params, Tokens::kNumber);
       match(Tokens::kIn);
 
       // Push the elapsed time.
       emit(Insns::kPush, 0.0f);
 
-      if (parseExpression() != Tokens::kNumber)
-      {
-        raise(Errors::kTypeMismatch);
-        return;
-      }
-
+      parseExpressions(1, Tokens::kNumber);
       match(Tokens::kSecs);
 
       rio2d::Script::Index ease = Easing::kLinearIndex;
@@ -1399,22 +1433,21 @@ namespace // Anonymous namespace to hyde the implementation details
       {
       case Fields::kBboxheightIndex:
       case Fields::kBboxwidthIndex:
+      case Fields::kBlueIndex:
+      case Fields::kGreenIndex:
       case Fields::kHeightIndex:
       case Fields::kOpacityIndex:
+      case Fields::kRedIndex:
       case Fields::kRotationIndex:
       case Fields::kScaleIndex:
+      case Fields::kSkewxIndex:
+      case Fields::kSkewyIndex:
       case Fields::kWidthIndex:
       case Fields::kXIndex:
       case Fields::kYIndex:
         match(Tokens::kIdentifier);
         match('=');
-
-        if (parseExpression() != Tokens::kNumber)
-        {
-          raise(Errors::kTypeMismatch);
-          return;
-        }
-
+        parseExpressions(1, Tokens::kNumber);
         emit(Insns::kSetProp, index, field);
         break;
 
@@ -1423,47 +1456,39 @@ namespace // Anonymous namespace to hyde the implementation details
       case Fields::kVisibleIndex:
         match(Tokens::kIdentifier);
         match('=');
-
-        if (parseExpression() != Tokens::kTrue)
-        {
-          raise(Errors::kTypeMismatch);
-          return;
-        }
-
+        parseExpressions(1, Tokens::kTrue);
         emit(Insns::kSetProp, index, field);
         break;
 
       case Fields::kPlaceIndex:
+      case Fields::kSkewIndex:
         match(Tokens::kIdentifier);
-        
-        if (parseExpression() != Tokens::kNumber)
-        {
-          raise(Errors::kTypeMismatch);
-          return;
-        }
+        parseExpressions(2, Tokens::kNumber);
+        emit(Insns::kCallMethod, index, field);
+        break;
 
-        match(',');
-
-        if (parseExpression() != Tokens::kNumber)
-        {
-          raise(Errors::kTypeMismatch);
-          return;
-        }
-
+      case Fields::kTintIndex:
+        match(Tokens::kIdentifier);
+        parseExpressions(3, Tokens::kNumber);
         emit(Insns::kCallMethod, index, field);
         break;
 
       case Fields::kMovebyIndex:
       case Fields::kRotatebyIndex:
       case Fields::kScalebyIndex:
+      case Fields::kSkewbyIndex:
+      case Fields::kTintbyIndex:
         emitNodeVary(false, index);
         break;
 
       case Fields::kFadeinIndex:
       case Fields::kFadeoutIndex:
+      case Fields::kFadetoIndex:
       case Fields::kMovetoIndex:
       case Fields::kRotatetoIndex:
       case Fields::kScaletoIndex:
+      case Fields::kSkewtoIndex:
+      case Fields::kTinttoIndex:
         emitNodeVary(true, index);
         break;
 
@@ -1483,13 +1508,7 @@ namespace // Anonymous namespace to hyde the implementation details
       case Fields::kYIndex:
         match(Tokens::kIdentifier);
         match('=');
-
-        if (parseExpression() != Tokens::kNumber)
-        {
-          raise(Errors::kTypeMismatch);
-          return;
-        }
-
+        parseExpressions(1, Tokens::kNumber);
         emit(Insns::kSetProp, index, field);
         break;
 
@@ -1509,13 +1528,7 @@ namespace // Anonymous namespace to hyde the implementation details
       case Fields::kWidthIndex:
         match(Tokens::kIdentifier);
         match('=');
-
-        if (parseExpression() != Tokens::kNumber)
-        {
-          raise(Errors::kTypeMismatch);
-          return;
-        }
-
+        parseExpressions(1, Tokens::kNumber);
         emit(Insns::kSetProp, index, field);
         break;
 
@@ -1533,10 +1546,14 @@ namespace // Anonymous namespace to hyde the implementation details
       {
       case Fields::kBboxheightIndex:
       case Fields::kBboxwidthIndex:
+      case Fields::kBlueIndex:
+      case Fields::kGreenIndex:
       case Fields::kHeightIndex:
       case Fields::kOpacityIndex:
       case Fields::kRotationIndex:
       case Fields::kScaleIndex:
+      case Fields::kSkewxIndex:
+      case Fields::kSkewyIndex:
       case Fields::kWidthIndex:
       case Fields::kXIndex:
       case Fields::kYIndex:
@@ -1753,14 +1770,7 @@ namespace // Anonymous namespace to hyde the implementation details
     {
       match();
 
-      rio2d::Script::Token type = parseExpression();
-
-      if (type != Tokens::kNumber)
-      {
-        raise(Errors::kTypeMismatch);
-        return;
-      }
-
+      parseExpressions(1, Tokens::kNumber);
       match(Tokens::kTimes);
 
       rio2d::Script::Address targetPC = m_emitter->getPC();
@@ -1898,14 +1908,33 @@ namespace // Anonymous namespace to hyde the implementation details
     void parsePause()
     {
       match();
-
-      if (parseExpression() != Tokens::kNumber)
-      {
-        raise(Errors::kTypeMismatch);
-        return;
-      }
+      parseExpressions(1, Tokens::kNumber);
+      match(Tokens::kSecs);
 
       emit(Insns::kPause);
+    }
+
+    void parseExpressions(unsigned count, rio2d::Script::Token type)
+    {
+      if (count != 0)
+      {
+        if (parseExpression() != type)
+        {
+          raise(Errors::kTypeMismatch);
+          return;
+        }
+
+        while (--count != 0)
+        {
+          match(',');
+
+          if (parseExpression() != type)
+          {
+            raise(Errors::kTypeMismatch);
+            return;
+          }
+        }
+      }
     }
 
     rio2d::Script::Token parseExpression()
@@ -2175,19 +2204,7 @@ namespace // Anonymous namespace to hyde the implementation details
         if (m_token == '(')
         {
           match();
-
-          if (parseExpression() != Tokens::kNumber)
-          {
-            return raise(Errors::kTypeMismatch);
-          }
-
-          match(',');
-
-          if (parseExpression() != Tokens::kNumber)
-          {
-            return raise(Errors::kTypeMismatch);
-          }
-
+          parseExpressions(2, Tokens::kNumber);
           match(')');
           emit(Insns::kRandRange);
         }
@@ -2199,34 +2216,28 @@ namespace // Anonymous namespace to hyde the implementation details
         return Tokens::kNumber;
 
       case Tokens::kFloor:
-      {
         match();
         match('(');
-        rio2d::Script::Token type = parseExpression();
+        parseExpressions(1, Tokens::kNumber);
         match(')');
         emit(Insns::kFloor);
-        return type;
-      }
+        return Tokens::kNumber;
 
       case Tokens::kCeil:
-      {
         match();
         match('(');
-        rio2d::Script::Token type = parseExpression();
+        parseExpressions(1, Tokens::kNumber);
         match(')');
         emit(Insns::kCeil);
-        return type;
-      }
+        return Tokens::kNumber;
 
       case Tokens::kTrunc:
-      {
         match();
         match('(');
-        rio2d::Script::Token type = parseExpression();
+        parseExpressions(1, Tokens::kNumber);
         match(')');
         emit(Insns::kTrunc);
-        return type;
-      }
+        return Tokens::kNumber;
       }
 
       return raise(Errors::kUnexpectedToken);
@@ -2372,10 +2383,26 @@ namespace // Anonymous namespace to hyde the implementation details
 
     void callNodeMethod(Thread* thread, cocos2d::Node* target, rio2d::Script::Index index)
     {
+      cocos2d::Color3B c;
+
       switch (index)
       {
+      case Fields::kTintIndex:
+        c.r = (GLubyte)thread->m_stack[thread->m_sp - 3];
+        c.g = (GLubyte)thread->m_stack[thread->m_sp - 2];
+        c.b = (GLubyte)thread->m_stack[thread->m_sp - 1];
+        target->setColor(c);
+        thread->m_sp -= 3;
+        break;
+
       case Fields::kPlaceIndex:
         target->setPosition(thread->m_stack[thread->m_sp - 2], thread->m_stack[thread->m_sp - 1]);
+        thread->m_sp -= 2;
+        break;
+
+      case Fields::kSkewIndex:
+        target->setSkewX(thread->m_stack[thread->m_sp - 2]);
+        target->setSkewY(thread->m_stack[thread->m_sp - 1]);
         thread->m_sp -= 2;
         break;
       }
@@ -2488,12 +2515,17 @@ namespace // Anonymous namespace to hyde the implementation details
       {
       case Fields::kBboxheightIndex: value = obj->getBoundingBox().size.height; break;
       case Fields::kBboxwidthIndex:  value = obj->getBoundingBox().size.width; break;
+      case Fields::kBlueIndex:       value = (float)obj->getColor().b; break;
+      case Fields::kGreenIndex:      value = (float)obj->getColor().g; break;
       case Fields::kFlipxIndex:      value = dynamic_cast<cocos2d::Sprite*>(obj)->isFlippedX() ? 1.0f : 0.0f; break;
       case Fields::kFlipyIndex:      value = dynamic_cast<cocos2d::Sprite*>(obj)->isFlippedY() ? 1.0f : 0.0f; break;
       case Fields::kHeightIndex:     value = obj->getContentSize().height; break;
       case Fields::kOpacityIndex:    value = obj->getOpacity(); break;
+      case Fields::kRedIndex:        value = (float)obj->getColor().r; break;
       case Fields::kRotationIndex:   value = obj->getRotation(); break;
       case Fields::kScaleIndex:      value = obj->getScale(); break;
+      case Fields::kSkewxIndex:      value = obj->getSkewX(); break;
+      case Fields::kSkewyIndex:      value = obj->getSkewY(); break;
       case Fields::kWidthIndex:      value = obj->getContentSize().width; break;
       case Fields::kXIndex:          value = obj->getPositionX(); break;
       case Fields::kYIndex:          value = obj->getPositionY(); break;
@@ -2669,14 +2701,20 @@ namespace // Anonymous namespace to hyde the implementation details
     void setNodeProp(Thread* thread, cocos2d::Node* obj, rio2d::Script::Index field)
     {
       rio2d::Script::Number value = thread->m_stack[--thread->m_sp];
+      cocos2d::Color3B c;
 
       switch (field)
       {
+      case Fields::kBlueIndex:     c = obj->getColor(); c.b = (GLubyte)value; obj->setColor(c); break;
+      case Fields::kGreenIndex:    c = obj->getColor(); c.g = (GLubyte)value; obj->setColor(c); break;
       case Fields::kFlipxIndex:    dynamic_cast<cocos2d::Sprite*>(obj)->setFlippedX(value != 0.0f); break;
       case Fields::kFlipyIndex:    dynamic_cast<cocos2d::Sprite*>(obj)->setFlippedY(value != 0.0f); break;
       case Fields::kOpacityIndex:  obj->setOpacity(value); break;
+      case Fields::kRedIndex:      c = obj->getColor(); c.r = (GLubyte)value; obj->setColor(c); break;
       case Fields::kRotationIndex: obj->setRotation(value); break;
       case Fields::kScaleIndex:    obj->setScale(value); break;
+      case Fields::kSkewxIndex:    obj->setSkewX(value); break;
+      case Fields::kSkewyIndex:    obj->setSkewY(value); break;
       case Fields::kXIndex:        obj->setPositionX(value); break;
       case Fields::kYIndex:        obj->setPositionY(value); break;
       case Fields::kVisibleIndex:  obj->setVisible(value != 0.0f); break;
@@ -2746,36 +2784,67 @@ namespace // Anonymous namespace to hyde the implementation details
       return true;
     }
 
-    inline void setField(cocos2d::Node* node, rio2d::Script::Index field, float value)
+    inline void setField(cocos2d::Node* node, rio2d::Script::Index field, float a)
     {
       switch (field)
       {
-      case Fields::kOpacityIndex:  node->setOpacity(value); break;
-      case Fields::kRotationIndex: node->setRotation(value); break;
-      case Fields::kScaleIndex:    node->setScale(value); break;
+      case Fields::kOpacityIndex:  node->setOpacity(a); break;
+      case Fields::kRotationIndex: node->setRotation(a); break;
+      case Fields::kScaleIndex:    node->setScale(a); break;
       }
     }
 
+    inline void setField(cocos2d::Node* node, rio2d::Script::Index field, float a, float b)
+    {
+      switch (field)
+      {
+      case Fields::kPositionIndex: node->setPositionX(a); node->setPositionY(b); break;
+      case Fields::kSkewIndex:     node->setSkewX(a); node->setSkewY(b); break;
+      }
+    }
+
+    inline void setField(cocos2d::Node* node, rio2d::Script::Index field, float a, float b, float c)
+    {
+      cocos2d::Color3B d;
+
+      switch (field)
+      {
+      case Fields::kTintIndex: d.r = (GLubyte)a; d.g = (GLubyte)b; d.b = (GLubyte)c; node->setColor(d); break;
+      }
+    }
+
+    struct VaryArgs1
+    {
+      rio2d::Script::Number m_sourceA;
+      rio2d::Script::Number m_destA;
+      rio2d::Script::Number m_sourceT;
+      rio2d::Script::Number m_destT;
+    };
+
+    struct VaryArgs2
+    {
+      rio2d::Script::Number m_sourceA;
+      rio2d::Script::Number m_sourceB;
+      rio2d::Script::Number m_destA;
+      rio2d::Script::Number m_destB;
+      rio2d::Script::Number m_sourceT;
+      rio2d::Script::Number m_destT;
+    };
+
+    struct VaryArgs3
+    {
+      rio2d::Script::Number m_sourceA;
+      rio2d::Script::Number m_sourceB;
+      rio2d::Script::Number m_sourceC;
+      rio2d::Script::Number m_destA;
+      rio2d::Script::Number m_destB;
+      rio2d::Script::Number m_destC;
+      rio2d::Script::Number m_sourceT;
+      rio2d::Script::Number m_destT;
+    };
+
     bool varyAbs(Thread* thread)
     {
-      struct Args1
-      {
-        rio2d::Script::Number m_sourceA;
-        rio2d::Script::Number m_destA;
-        rio2d::Script::Number m_sourceT;
-        rio2d::Script::Number m_destT;
-      };
-
-      struct Args2
-      {
-        rio2d::Script::Number m_sourceA;
-        rio2d::Script::Number m_sourceB;
-        rio2d::Script::Number m_destA;
-        rio2d::Script::Number m_destB;
-        rio2d::Script::Number m_sourceT;
-        rio2d::Script::Number m_destT;
-      };
-
       rio2d::Script::Index index = m_bytecode[thread->m_pc].m_index;
       rio2d::Script::Index field = m_bytecode[thread->m_pc + 1].m_index;
       rio2d::Script::Index ease = m_bytecode[thread->m_pc + 2].m_index;
@@ -2789,7 +2858,7 @@ namespace // Anonymous namespace to hyde the implementation details
       case Fields::kRotationIndex:
       case Fields::kScaleIndex:
       {
-        Args1* args = (Args1*)((char*)(thread->m_stack + thread->m_sp) - sizeof(Args1));
+        VaryArgs1* args = (VaryArgs1*)((char*)(thread->m_stack + thread->m_sp) - sizeof(VaryArgs1));
         args->m_sourceT += thread->m_dt;
 
         if (args->m_sourceT < args->m_destT)
@@ -2811,23 +2880,50 @@ namespace // Anonymous namespace to hyde the implementation details
       }
 
       case Fields::kPositionIndex:
+      case Fields::kSkewIndex:
       {
-        Args2* args = (Args2*)((char*)(thread->m_stack + thread->m_sp) - sizeof(Args2));
+        VaryArgs2* args = (VaryArgs2*)((char*)(thread->m_stack + thread->m_sp) - sizeof(VaryArgs2));
         args->m_sourceT += thread->m_dt;
 
         if (args->m_sourceT < args->m_destT)
         {
           rio2d::Script::Number time = Easing::evaluate(ease, args->m_sourceT / args->m_destT);
-          node->setPositionX(args->m_sourceA + time * (args->m_destA - args->m_sourceA));
-          node->setPositionY(args->m_sourceB + time * (args->m_destB - args->m_sourceB));
+          float a = args->m_sourceA + time * (args->m_destA - args->m_sourceA);
+          float b = args->m_sourceB + time * (args->m_destB - args->m_sourceB);
+          setField(node, field, a, b);
           return false;
         }
         else
         {
-          node->setPositionX(args->m_destA);
-          node->setPositionY(args->m_destB);
+          setField(node, field, args->m_destA, args->m_destB);
           thread->m_dt = args->m_sourceT - args->m_destT;
           thread->m_sp -= 6;
+          thread->m_pc += 3;
+          return true;
+        }
+
+        break;
+      }
+
+      case Fields::kTintIndex:
+      {
+        VaryArgs3* args = (VaryArgs3*)((char*)(thread->m_stack + thread->m_sp) - sizeof(VaryArgs3));
+        args->m_sourceT += thread->m_dt;
+
+        if (args->m_sourceT < args->m_destT)
+        {
+          rio2d::Script::Number time = Easing::evaluate(ease, args->m_sourceT / args->m_destT);
+          float a = args->m_sourceA + time * (args->m_destA - args->m_sourceA);
+          float b = args->m_sourceB + time * (args->m_destB - args->m_sourceB);
+          float c = args->m_sourceC + time * (args->m_destC - args->m_sourceC);
+          setField(node, field, a, b, c);
+          return false;
+        }
+        else
+        {
+          setField(node, field, args->m_destA, args->m_destB, args->m_destC);
+          thread->m_dt = args->m_sourceT - args->m_destT;
+          thread->m_sp -= 8;
           thread->m_pc += 3;
           return true;
         }
@@ -2970,6 +3066,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Insns::kTrunc:           cont = trunc(thread); break;
         case Insns::kVaryAbs:         cont = varyAbs(thread); break;
         case Insns::kVaryRel:         cont = varyRel(thread); break;
+        default:                      CCASSERT(0, "Unknown instruction");
         }
 
         if (!cont)
