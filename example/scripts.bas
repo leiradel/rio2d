@@ -7,7 +7,7 @@ sub growBomb(target as node, clickPos as vec2)
 
   parallel
     sequence
-      target.scaleTo 1 in 6 secs
+      target.scaleTo 1 in 0.06 secs
     end
     
     sequence
@@ -24,8 +24,8 @@ sub rot(target as node)
 end
 
 sub swingHealth(target as node, screenSize as size, speed as number)
-  let source_x = rand(0, floor(screenSize.width * 0.8)) + screenSize.width * 0.1
-  let target_x = rand(0, floor(screenSize.width * 0.8)) + screenSize.width * 0.1
+  source_x = rand(0, floor(screenSize.width * 0.8)) + screenSize.width * 0.1
+  target_x = rand(0, floor(screenSize.width * 0.8)) + screenSize.width * 0.1
   
   target.x = source_x
   target.y = screenSize.height + target.bboxHeight * 0.5
@@ -45,14 +45,14 @@ sub swingHealth(target as node, screenSize as size, speed as number)
 end
 
 sub meteorFall(target as node, screenSize as size, speed as number)
-  let meteor_x = rand(0, floor(screenSize.width * 0.8)) + screenSize.width * 0.1
-  let target_x = rand(0, floor(screenSize.width * 0.8)) + screenSize.width * 0.1
+	meteor_x = rand(0, floor(screenSize.width * 0.8)) + screenSize.width * 0.1
+	target_x = rand(0, floor(screenSize.width * 0.8)) + screenSize.width * 0.1
   
-  target.x = meteor_x
+	target.x = meteor_x
   target.y = screenSize.height + target.bboxHeight * 0.5
   target.visible = true
   
-  let dir = rand(0, 1) * 180 - 90
+  dir = rand(0, 1) * 180 - 90
   
   parallel
     forever
@@ -73,7 +73,7 @@ sub shockWave(target as node, bomb as node)
   target.visible = true
   target.opacity = 255
   
-  let targetScale = bomb.scale * 2
+  targetScale = bomb.scale * 2
   
   parallel
     sequence

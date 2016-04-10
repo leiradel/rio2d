@@ -95,7 +95,7 @@ The `example` folder has a script which was used to test the game [Sky Defense](
     
     type = 'node' | 'number' | 'size' | 'vec2' .
     
-    statement = forever | parallel | repeat | sequence | set_prop | assign | signal | pause .
+    statement = forever | parallel | repeat | sequence | assign | signal | pause .
     
     forever = 'forever' statement* 'end' .
     
@@ -105,11 +105,12 @@ The `example` folder has a script which was used to test the game [Sky Defense](
     
     sequence = 'sequence' statement* 'end' .
     
-    set_prop = ID '.' ID '=' expression
-             | ID '.' ( fadein | fadeout ) 'in' expression 'secs' ( 'with' ease )?
-             | ID '.' ( rotateby | rotateto | scaleby | scaleto ) expression 'in' expression 'secs' ( 'with' ease )?
-             | ID '.' ( moveby | moveto ) expression ',' expression 'in' expression 'secs' ( 'with' ease )?
-             .
+    assign = ID '=' expression
+           | ID '.' ID '=' expression
+           | ID '.' ( fadein | fadeout ) 'in' expression 'secs' ( 'with' ease )?
+           | ID '.' ( rotateby | rotateto | scaleby | scaleto ) expression 'in' expression 'secs' ( 'with' ease )?
+           | ID '.' ( moveby | moveto ) expression ',' expression 'in' expression 'secs' ( 'with' ease )?
+           .
     
     ease = backin | backinout | backout | bouncein | bounceinout | bounceout | circin | circinout | circout
          | cubicin | cubicinout | cubicout | elasticin | elasticinout | elasticout | expin | expinout | expout

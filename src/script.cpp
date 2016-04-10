@@ -131,7 +131,6 @@ namespace // Anonymous namespace to hyde the implementation details
       kIdentifier = 2,
       kIn = 0x0059783cU,
       kLessEqual = 3,
-      kLet = 0x0b888bcaU,
       kMod = 0x0b889145U,
       kMove = 0x7c9abc9cU,
       kNode = 0x7c9b46abU,
@@ -1088,7 +1087,6 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kFloor:
         case Tokens::kForever:
         case Tokens::kIn:
-        case Tokens::kLet:
         case Tokens::kMod:
         case Tokens::kMove:
         case Tokens::kNode:
@@ -1631,8 +1629,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kParallel:   parseParallel(); break;
         case Tokens::kRepeat:     parseRepeat(); break;
         case Tokens::kSequence:   parseSequence(); break;
-        case Tokens::kIdentifier: parseStatement(); break;
-        case Tokens::kLet:        parseLet(); break;
+        case Tokens::kIdentifier: parseAssign(); break;
         case Tokens::kSignal:     parseSignal(); break;
         case Tokens::kPause:      parsePause(); break;
         default:                  emit(Insns::kStop); goto out; // Let match(kEnd) raise the error, if any.
@@ -1657,8 +1654,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kParallel:   parseParallel(); break;
         case Tokens::kRepeat:     parseRepeat(); break;
         case Tokens::kSequence:   parseSequence(); break;
-        case Tokens::kIdentifier: parseStatement(); break;
-        case Tokens::kLet:        parseLet(); break;
+        case Tokens::kIdentifier: parseAssign(); break;
         case Tokens::kSignal:     parseSignal(); break;
         case Tokens::kPause:      parsePause(); break;
         default:                  goto out; // Let match(kEnd) raise the error, if any.
@@ -1744,8 +1740,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kParallel:   parseParallel(); break;
         case Tokens::kRepeat:     parseRepeat(); break;
         case Tokens::kSequence:   parseSequence(); break;
-        case Tokens::kIdentifier: parseStatement(); break;
-        case Tokens::kLet:        parseLet(); break;
+        case Tokens::kIdentifier: parseAssign(); break;
         case Tokens::kSignal:     parseSignal(); break;
         case Tokens::kPause:      parsePause(); break;
         default:                  goto out; // Let match(kEnd) raise the error, if any.
@@ -1774,8 +1769,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kParallel:   parseParallel(); break;
         case Tokens::kRepeat:     parseRepeat(); break;
         case Tokens::kSequence:   parseSequence(); break;
-        case Tokens::kIdentifier: parseStatement(); break;
-        case Tokens::kLet:        parseLet(); break;
+        case Tokens::kIdentifier: parseAssign(); break;
         case Tokens::kSignal:     parseSignal(); break;
         case Tokens::kPause:      parsePause(); break;
         default:                  goto out; // Let match(kEnd) raise the error, if any.
@@ -1786,81 +1780,78 @@ namespace // Anonymous namespace to hyde the implementation details
       match(Tokens::kEnd);
     }
 
-    void parseStatement()
+    void parseAssign()
     {
       rio2d::Hash hash = m_hash;
       match(Tokens::kIdentifier);
 
-      rio2d::Script::Token type;
-      Errors::Enum error = m_emitter->getType(hash, &type);
-
-      if (error != Errors::kOk)
+      if (m_token == '=')
       {
-        raise(error);
-        return;
-      }
+        match();
 
-      rio2d::Script::Index index;
-      error = m_emitter->getIndex(hash, &index);
+        rio2d::Script::Token type = parseExpression();
 
-      if (error != Errors::kOk)
-      {
-        raise(error);
-        return;
-      }
+        rio2d::Script::Token idType;
+        Errors::Enum error = m_emitter->getType(hash, &idType);
 
-      match('.');
-
-      switch (type)
-      {
-      case Tokens::kNode: emitSetNodeProp(index); break;
-      case Tokens::kVec2: emitSetVec2Prop(index); break;
-      case Tokens::kSize: emitSetSizeProp(index); break;
-      }
-    }
-
-    void parseLet()
-    {
-      match();
-
-      rio2d::Hash hash = m_hash;
-      match(Tokens::kIdentifier);
-
-      match('=');
-
-      rio2d::Script::Token type = parseExpression();
-
-      rio2d::Script::Token idType;
-      Errors::Enum error = m_emitter->getType(hash, &idType);
-
-      if (error == Errors::kUnknownIdentifier)
-      {
-        m_emitter->addLocal(hash, type);
-      }
-      else if (error == Errors::kOk)
-      {
-        if (idType != type)
+        if (error == Errors::kUnknownIdentifier)
         {
-          raise(Errors::kTypeMismatch);
+          m_emitter->addLocal(hash, type);
+        }
+        else if (error == Errors::kOk)
+        {
+          if (idType != type)
+          {
+            raise(Errors::kTypeMismatch);
+            return;
+          }
+        }
+        else
+        {
+          raise(error);
           return;
         }
+
+        rio2d::Script::Index index;
+        error = m_emitter->getIndex(hash, &index);
+
+        if (error != Errors::kOk)
+        {
+          raise(error);
+          return;
+        }
+
+        emit(Insns::kSetLocal, index);
       }
       else
       {
-        raise(error);
-        return;
+        rio2d::Script::Token type;
+        Errors::Enum error = m_emitter->getType(hash, &type);
+
+        if (error != Errors::kOk)
+        {
+          raise(error);
+          return;
+        }
+
+        rio2d::Script::Index index;
+        error = m_emitter->getIndex(hash, &index);
+
+        if (error != Errors::kOk)
+        {
+          raise(error);
+          return;
+        }
+
+        match('.');
+
+        switch (type)
+        {
+        case Tokens::kNode: emitSetNodeProp(index); break;
+        case Tokens::kVec2: emitSetVec2Prop(index); break;
+        case Tokens::kSize: emitSetSizeProp(index); break;
+        }
       }
-
-      rio2d::Script::Index index;
-      error = m_emitter->getIndex(hash, &index);
-
-      if (error != Errors::kOk)
-      {
-        raise(error);
-        return;
-      }
-
-      emit(Insns::kSetLocal, index);
     }
 
     void parseSignal()
