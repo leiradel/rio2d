@@ -407,7 +407,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kDrop = 10,
       kDup = 11,
       kFloor = 12,
-      kGetGlobal = 13,
+      kGetLocal = 13,
       kGetProp = 14,
       kJnz = 15,
       kJump = 16,
@@ -421,7 +421,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kPush = 24,
       kRand = 25,
       kRandRange = 26,
-      kSetGlobal = 27,
+      kSetLocal = 27,
       kSetProp = 28,
       kSignal = 29,
       kSpawn = 30,
@@ -449,7 +449,7 @@ namespace // Anonymous namespace to hyde the implementation details
         1, // kDrop
         1, // kDup
         1, // kFloor
-        2, // kGetGlobal
+        2, // kGetLocal
         3, // kGetProp
         2, // kJnz
         2, // kJump
@@ -463,7 +463,7 @@ namespace // Anonymous namespace to hyde the implementation details
         2, // kPush
         1, // kRand
         1, // kRandRange
-        2, // kSetGlobal
+        2, // kSetLocal
         3, // kSetProp
         2, // kSignal
         2, // kSpawn
@@ -496,7 +496,7 @@ namespace // Anonymous namespace to hyde the implementation details
       case kDrop:            CCLOG("%s%04x\t%08x\tdrop", prefix, addr, bc->m_insn); bc += 1; break;
       case kDup:             CCLOG("%s%04x\t%08x\tdup", prefix, addr, bc->m_insn); bc += 1; break;
       case kFloor:           CCLOG("%s%04x\t%08x\tfloor", prefix, addr, bc->m_insn); bc += 1; break;
-      case kGetGlobal:       CCLOG("%s%04x\t%08x\tget_global l@%d", prefix, addr, bc->m_insn, bc[1].m_index); bc += 2; break;
+      case kGetLocal:        CCLOG("%s%04x\t%08x\tget_local l@%d", prefix, addr, bc->m_insn, bc[1].m_index); bc += 2; break;
       case kGetProp:         CCLOG("%s%04x\t%08x\tget_field l@%d f@%d", prefix, addr, bc->m_insn, bc[1].m_index, bc[2].m_index); bc += 3; break;
       case kJnz:             CCLOG("%s%04x\t%08x\tjnz %04x", prefix, addr, bc->m_insn, bc[1].m_address); bc += 2; break;
       case kJump:            CCLOG("%s%04x\t%08x\tjump %04x", prefix, addr, bc->m_insn, bc[1].m_address); bc += 2; break;
@@ -510,7 +510,7 @@ namespace // Anonymous namespace to hyde the implementation details
       case kPush:            CCLOG("%s%04x\t%08x\tpush %f", prefix, addr, bc->m_insn, bc[1].m_number); bc += 2; break;
       case kRand:            CCLOG("%s%04x\t%08x\trand", prefix, addr, bc->m_insn); bc += 1; break;
       case kRandRange:       CCLOG("%s%04x\t%08x\trandr", prefix, addr, bc->m_insn); bc += 1; break;
-      case kSetGlobal:       CCLOG("%s%04x\t%08x\tset_global l@%d", prefix, addr, bc->m_insn, bc[1].m_index); bc += 2; break;
+      case kSetLocal:        CCLOG("%s%04x\t%08x\tset_local l@%d", prefix, addr, bc->m_insn, bc[1].m_index); bc += 2; break;
       case kSetProp:         CCLOG("%s%04x\t%08x\tset_field l@%d f@%d", prefix, addr, bc->m_insn, bc[1].m_index, bc[2].m_index); bc += 3; break;
       case kSignal:          CCLOG("%s%04x\t%08x\tsignal #%08x", prefix, addr, bc->m_insn, bc[1]); bc += 2; break;
       case kSpawn:           CCLOG("%s%04x\t%08x\tspawn %04x", prefix, addr, bc->m_insn, bc[1]); bc += 2; break;
@@ -867,8 +867,8 @@ namespace // Anonymous namespace to hyde the implementation details
         m_bytecode[m_pc++].m_number = (rio2d::Script::Number)va_arg(args, double);
         break;
 
-      case Insns::kGetGlobal:
-      case Insns::kSetGlobal:
+      case Insns::kGetLocal:
+      case Insns::kSetLocal:
         m_bytecode[m_pc++].m_insn = insn;
         m_bytecode[m_pc++].m_index = va_arg(args, rio2d::Script::Index);
         break;
@@ -1860,7 +1860,7 @@ namespace // Anonymous namespace to hyde the implementation details
         return;
       }
 
-      emit(Insns::kSetGlobal, index);
+      emit(Insns::kSetLocal, index);
     }
 
     void parseSignal()
@@ -2140,7 +2140,7 @@ namespace // Anonymous namespace to hyde the implementation details
         }
         else
         {
-          emit(Insns::kGetGlobal, index);
+          emit(Insns::kGetLocal, index);
           return type;
         }
       }
@@ -2445,7 +2445,7 @@ namespace // Anonymous namespace to hyde the implementation details
       return true;
     }
 
-    bool getGlobal(Thread* thread)
+    bool getLocal(Thread* thread)
     {
       rio2d::Script::LocalVar* local = m_locals + m_bytecode[thread->m_pc++].m_index;
       thread->m_stack[thread->m_sp++] = local->m_number;
@@ -2629,7 +2629,7 @@ namespace // Anonymous namespace to hyde the implementation details
       return true;
     }
 
-    bool setGlobal(Thread* thread)
+    bool setLocal(Thread* thread)
     {
       rio2d::Script::LocalVar* local = m_locals + m_bytecode[thread->m_pc++].m_index;
       local->m_number = thread->m_stack[--thread->m_sp];
@@ -2971,7 +2971,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Insns::kDrop:            cont = drop(thread); break;
         case Insns::kDup:             cont = dup(thread); break;
         case Insns::kFloor:           cont = floor(thread); break;
-        case Insns::kGetGlobal:       cont = getGlobal(thread); break;
+        case Insns::kGetLocal:        cont = getLocal(thread); break;
         case Insns::kGetProp:         cont = getProp(thread); break;
         case Insns::kJnz:             cont = jnz(thread); break;
         case Insns::kJump:            cont = jump(thread); break;
@@ -2985,7 +2985,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Insns::kPush:            cont = push(thread); break;
         case Insns::kRand:            cont = rand(thread); break;
         case Insns::kRandRange:       cont = randRange(thread); break;
-        case Insns::kSetGlobal:       cont = setGlobal(thread); break;
+        case Insns::kSetLocal:        cont = setLocal(thread); break;
         case Insns::kSetProp:         cont = setProp(thread); break;
         case Insns::kSignal:          cont = signal(thread); break;
         case Insns::kSpawn:           cont = spawn(thread); break;
