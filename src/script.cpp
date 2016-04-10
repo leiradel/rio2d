@@ -344,7 +344,7 @@ namespace // Anonymous namespace to hyde the implementation details
       default:             return -1;
       }
     }
-    
+
     static inline rio2d::Script::Number evaluate(rio2d::Script::Index index, rio2d::Script::Number p)
     {
       typedef rio2d::Script::Number(*Ease)(rio2d::Script::Number);

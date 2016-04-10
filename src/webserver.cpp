@@ -67,14 +67,14 @@ void rio2d::Webserver::destroy()
   for (auto it = m_scripts.begin(); it != m_scripts.end(); ++it)
   {
     auto script = (Script*)it->second->load();
-    delete script;
+    script->release();
     delete it->second;
   }
 #else
   for (auto it = m_scripts.begin(); it != m_scripts.end(); ++it)
   {
     auto script = (Script*)it->second;
-    delete script;
+    script->release();
   }
 #endif
 }
@@ -82,7 +82,7 @@ void rio2d::Webserver::destroy()
 static rio2d::Script* initWithFilename(const char* filename, char* error, size_t size)
 {
   auto data = cocos2d::FileUtils::getInstance()->getDataFromFile(filename);
-  
+
   if (data.isNull())
   {
     CCLOG("Error reading from %s", filename);
@@ -172,7 +172,7 @@ static int handleScriptUpload(struct mg_connection* conn, void* cbdata)
     CCLOG("Error: %s", error);
     return serverError(conn, error);
   }
-  
+
   // Replace the old script for the new.
   auto old = (rio2d::Script*)it->second->exchange((uintptr_t)script);
   script->retain();

@@ -45,13 +45,13 @@ namespace rio2d
     {
       // Maximum number of subroutines in a script.
       kMaxGlobals = 128,
-      
+
       // Maximum number of arguments to a subroutine.
       kMaxLocalVars = 32,
-      
+
       // Maximum number of statements running in parallel.
       kMaxThreads = 32,
-      
+
       // Maximum stack depth.
       kMaxStack = 16,
     };
