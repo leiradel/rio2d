@@ -95,13 +95,15 @@ The `example` folder has a script which was used to test the game [Sky Defense](
     
     type = 'node' | 'number' | 'size' | 'vec2' | 'frames' .
     
-    statement = for | forever | parallel | repeat | sequence | while | assign | signal | pause .
+    statement = for | forever | if | parallel | repeat | sequence | while | assign | signal | pause .
     
     for = 'for' ID '=' expression 'to' expression ( 'step' expression )? statement* 'next' .
     
     forever = 'forever' statement* 'end' .
     
-    parallel = 'parallel' ( forever | parallel | repeat | sequence )* 'end' .
+    if = 'if' expression 'then' statement* ( 'else' statement* )? 'end' .
+    
+    parallel = 'parallel' ( forever | parallel | sequence )* 'end' .
     
     repeat = 'repeat' statement* 'until' expression .
     
@@ -120,8 +122,8 @@ The `example` folder has a script which was used to test the game [Sky Defense](
            | ID '.' action_3 expression ',' expression ',' expression 'in' expression 'secs' ( 'with' ease )?
            .
     
-    property = 'bboxheight' | 'bboxwidth' | 'blue' | 'flipx' | 'flipy' | 'green' | 'height' | 'opacity' | 'red'
-             | 'rotation' | 'scale' | 'width' | 'x' | 'y' | 'visible'
+    property = 'bboxheight' | 'bboxwidth' | 'blue' | 'flipx' | 'flipy' | 'green' | 'height' | 'length' | 'opacity'
+             | 'red' | 'rotation' | 'scale' | 'width' | 'x' | 'y' | 'visible'
              .
     
     method_2 = 'place' .

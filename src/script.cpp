@@ -122,6 +122,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kAnd = 0x0b885e18U,
       kAs = 0x00597739U,
       kCeil = 0x7c9514a2U,
+      kElse = 0x7c964c6eU,
       kEnd = 0x0b886f1cU,
       kEof = 0,
       kFalse = 0x0f6bcef0U,
@@ -131,6 +132,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kFrames = 0xfe132c43U,
       kGreaterEqual = 1,
       kIdentifier = 2,
+      kIf = 0x00597834U,
       kIn = 0x0059783cU,
       kLessEqual = 3,
       kMod = 0x0b889145U,
@@ -154,6 +156,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kStep = 0x7c9e1a01U,
       kStringConst = 6,
       kSub = 0x0b88ab8fU,
+      kThen = 0x7c9e7354U,
       kTo = 0x005979a8U,
       kTrue = 0x7c9e9fe5U,
       kTrunc = 0x10729e11U,
@@ -171,12 +174,14 @@ namespace // Anonymous namespace to hyde the implementation details
       case Tokens::kAnd:
       case Tokens::kAs:
       case Tokens::kCeil:
+      case Tokens::kElse:
       case Tokens::kEnd:
       case Tokens::kFalse:
       case Tokens::kFloor:
       case Tokens::kFor:
       case Tokens::kForever:
       case Tokens::kFrames:
+      case Tokens::kIf:
       case Tokens::kIn:
       case Tokens::kMod:
       case Tokens::kMove:
@@ -195,6 +200,7 @@ namespace // Anonymous namespace to hyde the implementation details
       case Tokens::kSize:
       case Tokens::kStep:
       case Tokens::kSub:
+      case Tokens::kThen:
       case Tokens::kTo:
       case Tokens::kTrue:
       case Tokens::kTrunc:
@@ -226,6 +232,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kFlipy = 0x0f71ca09U,
       kGreen = 0x0f871a56U,
       kHeight = 0x01d688deU,
+      kLength = 0x0b2deac7U,
       kMoveby = 0x0e3c60b7U,
       kMoveto = 0x0e3c62ffU,
       kOpacity = 0x70951bfeU,
@@ -262,6 +269,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kFlipyIndex,
       kGreenIndex,
       kHeightIndex,
+      kLengthIndex,
       kMovebyIndex,
       kMovetoIndex,
       kOpacityIndex,
@@ -303,6 +311,7 @@ namespace // Anonymous namespace to hyde the implementation details
       case kFlipy:       return kFlipyIndex;
       case kGreen:       return kGreenIndex;
       case kHeight:      return kHeightIndex;
+      case kLength:      return kLengthIndex;
       case kMoveby:      return kMovebyIndex;
       case kMoveto:      return kMovetoIndex;
       case kOpacity:     return kOpacityIndex;
@@ -1610,7 +1619,7 @@ namespace // Anonymous namespace to hyde the implementation details
       }
     }
 
-    int emitGetNodeProp(rio2d::Script::Index index)
+    rio2d::Script::Token emitGetNodeProp(rio2d::Script::Index index)
     {
       rio2d::Script::Index field = Fields::index(m_hash);
 
@@ -1645,7 +1654,7 @@ namespace // Anonymous namespace to hyde the implementation details
       }
     }
 
-    int emitGetVec2Prop(rio2d::Script::Index index)
+    rio2d::Script::Token emitGetVec2Prop(rio2d::Script::Index index)
     {
       rio2d::Script::Index field = Fields::index(m_hash);
 
@@ -1662,7 +1671,7 @@ namespace // Anonymous namespace to hyde the implementation details
       }
     }
 
-    int emitGetSizeProp(rio2d::Script::Index index)
+    rio2d::Script::Token emitGetSizeProp(rio2d::Script::Index index)
     {
       rio2d::Script::Index field = Fields::index(m_hash);
 
@@ -1670,6 +1679,22 @@ namespace // Anonymous namespace to hyde the implementation details
       {
       case Fields::kHeightIndex:
       case Fields::kWidthIndex:
+        match(Tokens::kIdentifier);
+        emit(Insns::kGetProp, index, field);
+        return Tokens::kNumber;
+
+      default:
+        return raise(Errors::kUnknownField);
+      }
+    }
+
+    rio2d::Script::Token emitGetFramesProp(rio2d::Script::Index index)
+    {
+      rio2d::Script::Index field = Fields::index(m_hash);
+
+      switch (field)
+      {
+      case Fields::kLengthIndex:
         match(Tokens::kIdentifier);
         emit(Insns::kGetProp, index, field);
         return Tokens::kNumber;
@@ -1751,6 +1776,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kFor:        parseFor(); break;
         case Tokens::kForever:    parseForever(); goto out; // Forever can only be the last statement in a define.
         case Tokens::kIdentifier: parseAssign(); break;
+        case Tokens::kIf:         parseIf(); break;
         case Tokens::kParallel:   parseParallel(); break;
         case Tokens::kPause:      parsePause(); break;
         case Tokens::kRepeat:     parseRepeat(); break;
@@ -1829,6 +1855,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kFor:        parseFor(); break;
         case Tokens::kForever:    parseForever(); goto out; // Forever can only be the last statement in a "forever" sequence.
         case Tokens::kIdentifier: parseAssign(); break;
+        case Tokens::kIf:         parseIf(); break;
         case Tokens::kParallel:   parseParallel(); break;
         case Tokens::kPause:      parsePause(); break;
         case Tokens::kRepeat:     parseRepeat(); break;
@@ -1857,6 +1884,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kFor:        parseFor(); break;
         case Tokens::kForever:    parseForever(); goto out; // Forever can only be the last statement in a "forever" sequence.
         case Tokens::kIdentifier: parseAssign(); break;
+        case Tokens::kIf:         parseIf(); break;
         case Tokens::kParallel:   parseParallel(); break;
         case Tokens::kPause:      parsePause(); break;
         case Tokens::kRepeat:     parseRepeat(); break;
@@ -1901,12 +1929,9 @@ namespace // Anonymous namespace to hyde the implementation details
 
         switch (m_token)
         {
-        case Tokens::kFor:      parseFor(); emit(Insns::kStop); break;
         case Tokens::kForever:  parseForever(); break;
         case Tokens::kParallel: parseParallel(); emit(Insns::kStop); break;
-        case Tokens::kRepeat:   parseRepeat(); emit(Insns::kStop); break;
         case Tokens::kSequence: parseSequence(); emit(Insns::kStop); break;
-        case Tokens::kWhile:    parseWhile(); emit(Insns::kStop);  break;
         default:                goto out; // Let match(kEnd) raise the error, if any.
         }
       }
@@ -1937,6 +1962,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kFor:        parseFor(); break;
         case Tokens::kForever:    parseForever(); goto out; // Forever can only be the last statement in a sequence.
         case Tokens::kIdentifier: parseAssign(); break;
+        case Tokens::kIf:         parseIf(); break;
         case Tokens::kParallel:   parseParallel(); break;
         case Tokens::kPause:      parsePause(); break;
         case Tokens::kRepeat:     parseRepeat(); break;
@@ -1964,6 +1990,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kFor:        parseFor(); break;
         case Tokens::kForever:    parseForever(); goto out; // Forever can only be the last statement in a sequence.
         case Tokens::kIdentifier: parseAssign(); break;
+        case Tokens::kIf:         parseIf(); break;
         case Tokens::kParallel:   parseParallel(); break;
         case Tokens::kPause:      parsePause(); break;
         case Tokens::kRepeat:     parseRepeat(); break;
@@ -1995,6 +2022,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kFor:        parseFor(); break;
         case Tokens::kForever:    parseForever(); goto out; // Forever can only be the last statement in a sequence.
         case Tokens::kIdentifier: parseAssign(); break;
+        case Tokens::kIf:         parseIf(); break;
         case Tokens::kParallel:   parseParallel(); break;
         case Tokens::kPause:      parsePause(); break;
         case Tokens::kRepeat:     parseRepeat(); break;
@@ -2086,6 +2114,81 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kSize: emitSetSizeProp(index); break;
         }
       }
+    }
+
+    void parseIf()
+    {
+      match();
+
+      parseExpressions(1, Tokens::kTrue);
+      match(Tokens::kThen);
+
+      rio2d::Script::Address patch = m_emitter->getPC();
+      emit(Insns::kJz, 0);
+
+      // then
+      for (;;)
+      {
+        switch (m_token)
+        {
+        case Tokens::kFor:        parseFor(); break;
+        case Tokens::kForever:    parseForever(); goto out; // Forever can only be the last statement in a sequence.
+        case Tokens::kIdentifier: parseAssign(); break;
+        case Tokens::kIf:         parseIf(); break;
+        case Tokens::kParallel:   parseParallel(); break;
+        case Tokens::kPause:      parsePause(); break;
+        case Tokens::kRepeat:     parseRepeat(); break;
+        case Tokens::kSequence:   parseSequence(); break;
+        case Tokens::kSignal:     parseSignal(); break;
+        case Tokens::kWhile:      parseWhile(); break;
+        default:                  goto out; // Let match(kEnd) raise the error, if any.
+        }
+      }
+
+    out:
+      if (m_token == Tokens::kEnd)
+      {
+        // No else, finish the 'if'.
+        rio2d::Script::Bytecode bc;
+        bc.m_address = m_emitter->getPC();
+        m_emitter->patch(patch + 1, bc);
+      }
+      else
+      {
+        match(Tokens::kElse);
+
+        rio2d::Script::Address patch2 = m_emitter->getPC();
+        emit(Insns::kJump, 0);
+
+        rio2d::Script::Bytecode bc;
+        bc.m_address = m_emitter->getPC();
+        m_emitter->patch(patch + 1, bc);
+
+        // else
+        for (;;)
+        {
+          switch (m_token)
+          {
+          case Tokens::kFor:        parseFor(); break;
+          case Tokens::kForever:    parseForever(); goto out2; // Forever can only be the last statement in a sequence.
+          case Tokens::kIdentifier: parseAssign(); break;
+          case Tokens::kIf:         parseIf(); break;
+          case Tokens::kParallel:   parseParallel(); break;
+          case Tokens::kPause:      parsePause(); break;
+          case Tokens::kRepeat:     parseRepeat(); break;
+          case Tokens::kSequence:   parseSequence(); break;
+          case Tokens::kSignal:     parseSignal(); break;
+          case Tokens::kWhile:      parseWhile(); break;
+          default:                  goto out2; // Let match(kEnd) raise the error, if any.
+          }
+        }
+
+      out2:
+        bc.m_address = m_emitter->getPC();
+        m_emitter->patch(patch2 + 1, bc);
+      }
+
+      match(Tokens::kEnd);
     }
 
     void parseSignal()
@@ -2377,9 +2480,10 @@ namespace // Anonymous namespace to hyde the implementation details
 
           switch (type)
           {
-          case Tokens::kNode: return emitGetNodeProp(index); break;
-          case Tokens::kVec2: return emitGetVec2Prop(index); break;
-          case Tokens::kSize: return emitGetSizeProp(index); break;
+          case Tokens::kNode:   return emitGetNodeProp(index); break;
+          case Tokens::kVec2:   return emitGetVec2Prop(index); break;
+          case Tokens::kSize:   return emitGetSizeProp(index); break;
+          case Tokens::kFrames: return emitGetFramesProp(index); break;
           }
         }
         else
@@ -2756,6 +2860,19 @@ namespace // Anonymous namespace to hyde the implementation details
       thread->m_stack[thread->m_sp++] = value;
     }
 
+    void getFramesProp(Thread* thread, rio2d::Script::Frames* obj, rio2d::Script::Index field)
+    {
+      float value;
+
+      switch (field)
+      {
+      case Fields::kLengthIndex: value = (float)obj->size(); break;
+      default:                   CCASSERT(0, "Unknown property for Frames instance");
+      }
+
+      thread->m_stack[thread->m_sp++] = value;
+    }
+
     bool getProp(Thread* thread)
     {
       rio2d::Script::LocalVar* local = m_locals + m_bytecode[thread->m_pc++].m_index;
@@ -2773,6 +2890,10 @@ namespace // Anonymous namespace to hyde the implementation details
 
       case Tokens::kVec2:
         getVec2Prop(thread, (cocos2d::Vec2*)local->m_pointer, field);
+        break;
+
+      case Tokens::kFrames:
+        getFramesProp(thread, (rio2d::Script::Frames*)local->m_pointer, field);
         break;
 
       default:

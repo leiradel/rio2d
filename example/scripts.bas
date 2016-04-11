@@ -52,7 +52,11 @@ sub meteorFall(target as node, screenSize as size, speed as number)
   target.y = screenSize.height + target.bboxHeight * 0.5
   target.visible = true
   
-  dir = rand(0, 1) * 180 - 90
+  if rand(0, 1) = 0 then
+    dir = -90
+  else
+    dir = 90
+  end
   
   parallel
     forever
@@ -89,25 +93,22 @@ end
 
 sub groundHit(target as node, screenSize as size, frms as frames)
   target.moveby 0, screenSize.height * 0.12 in 0 secs
-  i = 0
   
-  while i < 10
-    target.setframe frms, i
-    i = i + 1
+  for i = 1 to frms.length - 1
+    target.setFrame frms, i
     pause 0.1 secs
-  end
+  next
 
+  rem frms[0] contains the meteor sprite frame, so we reset the sprite to it
+  target.setFrame frms, 0
   target.visible = false
 end
 
 sub explosion(target as node, frms as frames)
-  i = 0
-  
-  repeat
-    target.setframe frms, i
-    i = i + 1
+  for i = 0 to frms.length - 1
+    target.setFrame frms, i
     pause 0.0714285714285714 secs
-  until i > 6
+  next
   
   target.visible = false
 end
