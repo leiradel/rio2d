@@ -103,7 +103,7 @@ The `example` folder has a script which was used to test the game [Sky Defense](
     
     parallel = 'parallel' ( forever | parallel | repeat | sequence )* 'end' .
     
-    repeat = 'repeat' expression 'times' statement* 'end' .
+    repeat = 'repeat' statement* 'until' expression .
     
     sequence = 'sequence' statement* 'end' .
     

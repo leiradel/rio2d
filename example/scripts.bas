@@ -99,10 +99,13 @@ sub groundHit(target as node, screenSize as size, frms as frames)
 end
 
 sub explosion(target as node, frms as frames)
-  for i = 0 to 6
+  i = 0
+  
+  repeat
     target.setframe frms, i
+    i = i + 1
     pause 0.0714285714285714 secs
-  next
+  until i > 6
   
   target.visible = false
 end

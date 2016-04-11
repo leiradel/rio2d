@@ -154,14 +154,58 @@ namespace // Anonymous namespace to hyde the implementation details
       kStep = 0x7c9e1a01U,
       kStringConst = 6,
       kSub = 0x0b88ab8fU,
-      kTimes = 0x106d8b87U,
       kTo = 0x005979a8U,
       kTrue = 0x7c9e9fe5U,
       kTrunc = 0x10729e11U,
+      kUntil = 0x10828031U,
       kVec2 = 0x7c9f7ed5U,
       kWith = 0x7ca01ea1U,
       kXor = 0x0b88c01eU,
     };
+
+    static bool isKeyword(rio2d::Hash hash)
+    {
+      switch (hash)
+      {
+      case Tokens::kAnd:
+      case Tokens::kAs:
+      case Tokens::kCeil:
+      case Tokens::kEnd:
+      case Tokens::kFalse:
+      case Tokens::kFloor:
+      case Tokens::kFor:
+      case Tokens::kForever:
+      case Tokens::kFrames:
+      case Tokens::kIn:
+      case Tokens::kMod:
+      case Tokens::kMove:
+      case Tokens::kNext:
+      case Tokens::kNode:
+      case Tokens::kNot:
+      case Tokens::kNumber:
+      case Tokens::kOr:
+      case Tokens::kParallel:
+      case Tokens::kPause:
+      case Tokens::kRand:
+      case Tokens::kRepeat:
+      case Tokens::kSecs:
+      case Tokens::kSequence:
+      case Tokens::kSignal:
+      case Tokens::kSize:
+      case Tokens::kStep:
+      case Tokens::kSub:
+      case Tokens::kTo:
+      case Tokens::kTrue:
+      case Tokens::kTrunc:
+      case Tokens::kUntil:
+      case Tokens::kVec2:
+      case Tokens::kWith:
+      case Tokens::kXor:
+        return true;
+      }
+
+      return false;
+    }
   };
 
   // Fields that can be addressed with objects.
@@ -463,6 +507,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kGetProp,
       kJnz,
       kJump,
+      kJz,
       kLogicalAnd,
       kLogicalNot,
       kLogicalOr,
@@ -507,6 +552,7 @@ namespace // Anonymous namespace to hyde the implementation details
         3, // kGetProp
         2, // kJnz
         2, // kJump
+        2, // kJz
         1, // kLogicalAnd
         1, // kLogicalNot
         1, // kLogicalOr
@@ -556,6 +602,7 @@ namespace // Anonymous namespace to hyde the implementation details
       case kGetProp:         CCLOG("%s%04x\t%08x\tget_property l@%d f@%d", prefix, addr, bc->m_insn, bc[1].m_index, bc[2].m_index); bc += 3; break;
       case kJnz:             CCLOG("%s%04x\t%08x\tjnz %04x", prefix, addr, bc->m_insn, bc[1].m_address); bc += 2; break;
       case kJump:            CCLOG("%s%04x\t%08x\tjump %04x", prefix, addr, bc->m_insn, bc[1].m_address); bc += 2; break;
+      case kJz:              CCLOG("%s%04x\t%08x\tjz %04x", prefix, addr, bc->m_insn, bc[1].m_address); bc += 2; break;
       case kLogicalAnd:      CCLOG("%s%04x\t%08x\tand", prefix, addr, bc->m_insn); bc += 1; break;
       case kLogicalNot:      CCLOG("%s%04x\t%08x\tnot", prefix, addr, bc->m_insn); bc += 1; break;
       case kLogicalOr:       CCLOG("%s%04x\t%08x\tor", prefix, addr, bc->m_insn); bc += 1; break;
@@ -566,7 +613,7 @@ namespace // Anonymous namespace to hyde the implementation details
       case kPause:           CCLOG("%s%04x\t%08x\tpause", prefix, addr, bc->m_insn); bc += 1; break;
       case kPush:            CCLOG("%s%04x\t%08x\tpush %f", prefix, addr, bc->m_insn, bc[1].m_number); bc += 2; break;
       case kRand:            CCLOG("%s%04x\t%08x\trand", prefix, addr, bc->m_insn); bc += 1; break;
-      case kRandRange:       CCLOG("%s%04x\t%08x\trandr", prefix, addr, bc->m_insn); bc += 1; break;
+      case kRandRange:       CCLOG("%s%04x\t%08x\trand_range", prefix, addr, bc->m_insn); bc += 1; break;
       case kSetLocal:        CCLOG("%s%04x\t%08x\tset_local l@%d", prefix, addr, bc->m_insn, bc[1].m_index); bc += 2; break;
       case kSetFrame:        CCLOG("%s%04x\t%08x\tset_frame l@%d l@%d", prefix, addr, bc->m_insn, bc[1].m_index, bc[2].m_index); bc += 3; break;
       case kSetProp:         CCLOG("%s%04x\t%08x\tset_property l@%d f@%d", prefix, addr, bc->m_insn, bc[1].m_index, bc[2].m_index); bc += 3; break;
@@ -632,7 +679,7 @@ namespace // Anonymous namespace to hyde the implementation details
       m_numGlobals = 0;
     }
 
-    Errors::Enum addGlobal(rio2d::Hash hash)
+    virtual Errors::Enum addGlobal(rio2d::Hash hash) override
     {
       if (m_numGlobals < rio2d::Script::kMaxGlobals)
       {
@@ -658,12 +705,12 @@ namespace // Anonymous namespace to hyde the implementation details
       return Errors::kOutOfMemory;
     }
 
-    size_t numGlobals() const
+    virtual size_t numGlobals() const override
     {
       return m_numGlobals;
     }
 
-    Errors::Enum addLocal(rio2d::Hash hash, rio2d::Script::Token type)
+    virtual Errors::Enum addLocal(rio2d::Hash hash, rio2d::Script::Token type) override
     {
       if (m_numLocals < rio2d::Script::kMaxLocalVars)
       {
@@ -694,12 +741,12 @@ namespace // Anonymous namespace to hyde the implementation details
       return Errors::kOutOfMemory;
     }
 
-    size_t numLocals() const
+    virtual size_t numLocals() const override
     {
       return m_numLocals;
     }
 
-    Errors::Enum getIndex(rio2d::Hash hash, rio2d::Script::Index* index) const
+    virtual Errors::Enum getIndex(rio2d::Hash hash, rio2d::Script::Index* index) const override
     {
       const Local* local = m_locals;
       const Local* end = local + m_numLocals;
@@ -718,7 +765,7 @@ namespace // Anonymous namespace to hyde the implementation details
       return Errors::kUnknownIdentifier;
     }
 
-    Errors::Enum getType(rio2d::Hash hash, rio2d::Script::Token* type) const
+    virtual Errors::Enum getType(rio2d::Hash hash, rio2d::Script::Token* type) const override
     {
       const Local* local = m_locals;
       const Local* end = local + m_numLocals;
@@ -737,17 +784,17 @@ namespace // Anonymous namespace to hyde the implementation details
       return Errors::kUnknownIdentifier;
     }
 
-    virtual void emit(rio2d::Script::Insn insn, va_list args)
+    virtual void emit(rio2d::Script::Insn insn, va_list args) override
     {
       m_pc += Insns::size(insn);
     }
 
-    virtual rio2d::Script::Address getPC() const
+    virtual rio2d::Script::Address getPC() const override
     {
       return m_pc;
     }
 
-    virtual void patch(rio2d::Script::Address address, rio2d::Script::Bytecode bc)
+    virtual void patch(rio2d::Script::Address address, rio2d::Script::Bytecode bc) override
     {
       (void)address;
       (void)bc;
@@ -773,7 +820,7 @@ namespace // Anonymous namespace to hyde the implementation details
       m_pc = 0;
     }
 
-    Errors::Enum addGlobal(rio2d::Hash hash)
+    virtual Errors::Enum addGlobal(rio2d::Hash hash) override
     {
       rio2d::Script::Subroutine* global = m_globals + m_numGlobals++;
 
@@ -784,12 +831,12 @@ namespace // Anonymous namespace to hyde the implementation details
       return Errors::kOk;
     }
 
-    size_t numGlobals() const
+    virtual size_t numGlobals() const override
     {
       return m_numGlobals;
     }
 
-    Errors::Enum addLocal(rio2d::Hash hash, rio2d::Script::Token type)
+    virtual Errors::Enum addLocal(rio2d::Hash hash, rio2d::Script::Token type) override
     {
       if (m_numGlobals != 0)
       {
@@ -820,7 +867,7 @@ namespace // Anonymous namespace to hyde the implementation details
       return Errors::kOk;
     }
 
-    virtual size_t numLocals() const
+    virtual size_t numLocals() const override
     {
       if (m_numGlobals != 0)
       {
@@ -831,7 +878,7 @@ namespace // Anonymous namespace to hyde the implementation details
       return 0;
     }
 
-    Errors::Enum getIndex(rio2d::Hash hash, rio2d::Script::Index* index) const
+    virtual Errors::Enum getIndex(rio2d::Hash hash, rio2d::Script::Index* index) const override
     {
       if (m_numGlobals != 0)
       {
@@ -854,7 +901,7 @@ namespace // Anonymous namespace to hyde the implementation details
       return Errors::kUnknownIdentifier;
     }
 
-    Errors::Enum getType(rio2d::Hash hash, rio2d::Script::Token* type) const
+    virtual Errors::Enum getType(rio2d::Hash hash, rio2d::Script::Token* type) const override
     {
       if (m_numGlobals != 0)
       {
@@ -877,7 +924,7 @@ namespace // Anonymous namespace to hyde the implementation details
       return Errors::kUnknownIdentifier;
     }
 
-    virtual void emit(rio2d::Script::Insn insn, va_list args)
+    virtual void emit(rio2d::Script::Insn insn, va_list args) override
     {
       switch (insn)
       {
@@ -910,6 +957,7 @@ namespace // Anonymous namespace to hyde the implementation details
 
       case Insns::kJnz:
       case Insns::kJump:
+      case Insns::kJz:
       case Insns::kSpawn:
         m_bytecode[m_pc++].m_insn = insn;
         m_bytecode[m_pc++].m_address = va_arg(args, rio2d::Script::Address);
@@ -953,15 +1001,18 @@ namespace // Anonymous namespace to hyde the implementation details
         m_bytecode[m_pc++].m_index = va_arg(args, rio2d::Script::Index);
         m_bytecode[m_pc++].m_address = va_arg(args, rio2d::Script::Address);
         break;
+
+      default:
+        CCASSERT(0, "Unknown instruction");
       }
     }
 
-    virtual uint32_t getPC() const
+    virtual rio2d::Script::Address getPC() const override
     {
       return m_pc;
     }
 
-    virtual void patch(rio2d::Script::Address address, rio2d::Script::Bytecode bc)
+    virtual void patch(rio2d::Script::Address address, rio2d::Script::Bytecode bc) override
     {
       CCASSERT(address < m_pc, "Invalid address to patch");
       m_bytecode[address] = bc;
@@ -1143,55 +1194,22 @@ namespace // Anonymous namespace to hyde the implementation details
         // Evaluate the hash of the identifier to check if it's a keyword.
         m_hash = rio2d::hashLower(m_lexeme, m_current - m_lexeme);
 
-        switch (m_hash)
+        if (Tokens::isKeyword(m_hash))
         {
-        case Tokens::kAnd:
-        case Tokens::kAs:
-        case Tokens::kCeil:
-        case Tokens::kEnd:
-        case Tokens::kFalse:
-        case Tokens::kFloor:
-        case Tokens::kFor:
-        case Tokens::kForever:
-        case Tokens::kFrames:
-        case Tokens::kIn:
-        case Tokens::kMod:
-        case Tokens::kMove:
-        case Tokens::kNext:
-        case Tokens::kNode:
-        case Tokens::kNot:
-        case Tokens::kNumber:
-        case Tokens::kOr:
-        case Tokens::kParallel:
-        case Tokens::kPause:
-        case Tokens::kRand:
-        case Tokens::kRepeat:
-        case Tokens::kSecs:
-        case Tokens::kSequence:
-        case Tokens::kSignal:
-        case Tokens::kSize:
-        case Tokens::kStep:
-        case Tokens::kSub:
-        case Tokens::kTimes:
-        case Tokens::kTo:
-        case Tokens::kTrue:
-        case Tokens::kTrunc:
-        case Tokens::kVec2:
-        case Tokens::kWith:
-        case Tokens::kXor:
           m_token = m_hash;
-          break;
-
-        case Tokens::kRem: // Comment.
+        }
+        else if (m_hash == Tokens::kRem)
+        {
+          // Comment.
           while (*m_current != '\n' && *m_current != 0) m_current++;
 
           // Could be return next(...) since compilers do tail call optimization blah blah blah,
           // but the optimization would be just a jump anyway, just like this goto here :P
           goto again;
-
-        default:
+        }
+        else
+        {
           m_token = Tokens::kIdentifier;
-          break;
         }
 
         m_length = m_current - m_lexeme;
@@ -1903,9 +1921,6 @@ namespace // Anonymous namespace to hyde the implementation details
     {
       match();
 
-      parseExpressions(1, Tokens::kNumber);
-      match(Tokens::kTimes);
-
       rio2d::Script::Address targetPC = m_emitter->getPC();
 
       for (;;)
@@ -1925,13 +1940,9 @@ namespace // Anonymous namespace to hyde the implementation details
       }
 
     out:
-      match(Tokens::kEnd);
-
-      emit(Insns::kPush, 1.0f);
-      emit(Insns::kSub);
-      emit(Insns::kDup);
-      emit(Insns::kJnz, targetPC);
-      emit(Insns::kDrop);
+      match(Tokens::kUntil);
+      parseExpressions(1, Tokens::kTrue);
+      emit(Insns::kJz, targetPC);
     }
 
     void parseSequence()
@@ -2746,6 +2757,20 @@ namespace // Anonymous namespace to hyde the implementation details
       return true;
     }
 
+    bool jz(Thread* thread)
+    {
+      if (thread->m_stack[--thread->m_sp] == 0.0f)
+      {
+        thread->m_pc = m_bytecode[thread->m_pc].m_address;
+      }
+      else
+      {
+        thread->m_pc++;
+      }
+
+      return true;
+    }
+
     bool logicalAnd(Thread* thread)
     {
       thread->m_stack[thread->m_sp - 2] = thread->m_stack[thread->m_sp - 2] != 0.0f && thread->m_stack[thread->m_sp - 1] != 0.0f;
@@ -2935,8 +2960,9 @@ namespace // Anonymous namespace to hyde the implementation details
       if (m_numThreads < rio2d::Script::kMaxThreads)
       {
         Thread* nt = m_threads + m_numThreads++;
+        *nt = *thread;
+
         nt->m_pc = m_bytecode[thread->m_pc++].m_address;
-        nt->m_sp = 0;
         nt->m_dt = thread->m_dt;
       }
 
@@ -3224,6 +3250,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Insns::kGetProp:         cont = getProp(thread); break;
         case Insns::kJnz:             cont = jnz(thread); break;
         case Insns::kJump:            cont = jump(thread); break;
+        case Insns::kJz:              cont = jz(thread); break;
         case Insns::kLogicalAnd:      cont = logicalAnd(thread); break;
         case Insns::kLogicalNot:      cont = logicalNot(thread); break;
         case Insns::kLogicalOr:       cont = logicalOr(thread); break;
