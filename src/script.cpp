@@ -126,6 +126,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kEof = 0,
       kFalse = 0x0f6bcef0U,
       kFloor = 0x0f71e367U,
+      kFor = 0x0b88738cU,
       kForever = 0xbaa8bf3eU,
       kFrames = 0xfe132c43U,
       kGreaterEqual = 1,
@@ -134,6 +135,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kLessEqual = 3,
       kMod = 0x0b889145U,
       kMove = 0x7c9abc9cU,
+      kNext = 0x7c9b1ec4U,
       kNode = 0x7c9b46abU,
       kNot = 0x0b889596U,
       kNotEqual = 4,
@@ -149,9 +151,11 @@ namespace // Anonymous namespace to hyde the implementation details
       kSequence = 0x0c15489eU,
       kSignal = 0x1bc6ade3U,
       kSize = 0x7c9dede0U,
+      kStep = 0x7c9e1a01U,
       kStringConst = 6,
       kSub = 0x0b88ab8fU,
       kTimes = 0x106d8b87U,
+      kTo = 0x005979a8U,
       kTrue = 0x7c9e9fe5U,
       kTrunc = 0x10729e11U,
       kVec2 = 0x7c9f7ed5U,
@@ -465,6 +469,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kModulus,
       kMul,
       kNeg,
+      kNext,
       kPause,
       kPush,
       kRand,
@@ -508,6 +513,7 @@ namespace // Anonymous namespace to hyde the implementation details
         1, // kModulus
         1, // kMul
         1, // kNeg
+        3, // kNext
         1, // kPause
         2, // kPush
         1, // kRand
@@ -556,6 +562,7 @@ namespace // Anonymous namespace to hyde the implementation details
       case kModulus:         CCLOG("%s%04x\t%08x\tmod", prefix, addr, bc->m_insn); bc += 1; break;
       case kMul:             CCLOG("%s%04x\t%08x\tmul", prefix, addr, bc->m_insn); bc += 1; break;
       case kNeg:             CCLOG("%s%04x\t%08x\tneg", prefix, addr, bc->m_insn); bc += 1; break;
+      case kNext:            CCLOG("%s%04x\t%08x\tnext l@%d %04x", prefix, addr, bc->m_insn, bc[1].m_index, bc[2].m_address); bc += 3; break;
       case kPause:           CCLOG("%s%04x\t%08x\tpause", prefix, addr, bc->m_insn); bc += 1; break;
       case kPush:            CCLOG("%s%04x\t%08x\tpush %f", prefix, addr, bc->m_insn, bc[1].m_number); bc += 2; break;
       case kRand:            CCLOG("%s%04x\t%08x\trand", prefix, addr, bc->m_insn); bc += 1; break;
@@ -940,6 +947,12 @@ namespace // Anonymous namespace to hyde the implementation details
         m_bytecode[m_pc++].m_index = va_arg(args, rio2d::Script::Index);
         m_bytecode[m_pc++].m_index = va_arg(args, rio2d::Script::Index);
         break;
+
+      case Insns::kNext:
+        m_bytecode[m_pc++].m_insn = insn;
+        m_bytecode[m_pc++].m_index = va_arg(args, rio2d::Script::Index);
+        m_bytecode[m_pc++].m_address = va_arg(args, rio2d::Script::Address);
+        break;
       }
     }
 
@@ -1138,11 +1151,13 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kEnd:
         case Tokens::kFalse:
         case Tokens::kFloor:
+        case Tokens::kFor:
         case Tokens::kForever:
         case Tokens::kFrames:
         case Tokens::kIn:
         case Tokens::kMod:
         case Tokens::kMove:
+        case Tokens::kNext:
         case Tokens::kNode:
         case Tokens::kNot:
         case Tokens::kNumber:
@@ -1155,8 +1170,10 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kSequence:
         case Tokens::kSignal:
         case Tokens::kSize:
+        case Tokens::kStep:
         case Tokens::kSub:
         case Tokens::kTimes:
+        case Tokens::kTo:
         case Tokens::kTrue:
         case Tokens::kTrunc:
         case Tokens::kVec2:
@@ -1711,19 +1728,98 @@ namespace // Anonymous namespace to hyde the implementation details
       {
         switch (m_token)
         {
+        case Tokens::kFor:        parseFor(); break;
         case Tokens::kForever:    parseForever(); goto out; // Forever can only be the last statement in a define.
+        case Tokens::kIdentifier: parseAssign(); break;
         case Tokens::kParallel:   parseParallel(); break;
+        case Tokens::kPause:      parsePause(); break;
         case Tokens::kRepeat:     parseRepeat(); break;
         case Tokens::kSequence:   parseSequence(); break;
-        case Tokens::kIdentifier: parseAssign(); break;
         case Tokens::kSignal:     parseSignal(); break;
-        case Tokens::kPause:      parsePause(); break;
         default:                  emit(Insns::kStop); goto out; // Let match(kEnd) raise the error, if any.
         }
       }
 
     out:
       match(Tokens::kEnd);
+    }
+
+    void parseFor()
+    {
+      match();
+
+      rio2d::Hash hash = m_hash;
+      match(Tokens::kIdentifier);
+      match('=');
+
+      parseExpressions(1, Tokens::kNumber);
+
+      rio2d::Script::Token idType;
+      Errors::Enum error = m_emitter->getType(hash, &idType);
+
+      if (error == Errors::kUnknownIdentifier)
+      {
+        m_emitter->addLocal(hash, Tokens::kNumber);
+      }
+      else if (error == Errors::kOk)
+      {
+        if (idType != Tokens::kNumber)
+        {
+          raise(Errors::kTypeMismatch);
+          return;
+        }
+      }
+      else
+      {
+        raise(error);
+        return;
+      }
+
+      rio2d::Script::Index index;
+      error = m_emitter->getIndex(hash, &index);
+
+      if (error != Errors::kOk)
+      {
+        raise(error);
+        return;
+      }
+
+      emit(Insns::kSetLocal, index);
+
+      match(Tokens::kTo);
+      parseExpressions(1, Tokens::kNumber);
+
+      if (m_token == Tokens::kStep)
+      {
+        match();
+        parseExpressions(1, Tokens::kNumber);
+      }
+      else
+      {
+        emit(Insns::kPush, 1.0f);
+      }
+
+      rio2d::Script::Address targetPC = m_emitter->getPC();
+
+      for (;;)
+      {
+        switch (m_token)
+        {
+        case Tokens::kFor:        parseFor(); break;
+        case Tokens::kForever:    parseForever(); goto out; // Forever can only be the last statement in a "forever" sequence.
+        case Tokens::kIdentifier: parseAssign(); break;
+        case Tokens::kParallel:   parseParallel(); break;
+        case Tokens::kPause:      parsePause(); break;
+        case Tokens::kRepeat:     parseRepeat(); break;
+        case Tokens::kSequence:   parseSequence(); break;
+        case Tokens::kSignal:     parseSignal(); break;
+        default:                  goto out; // Let match(kEnd) raise the error, if any.
+        }
+      }
+
+    out:
+      match(Tokens::kNext);
+      emit(Insns::kNext, index, targetPC);
     }
 
     void parseForever()
@@ -1736,13 +1832,14 @@ namespace // Anonymous namespace to hyde the implementation details
       {
         switch (m_token)
         {
+        case Tokens::kFor:        parseFor(); break;
         case Tokens::kForever:    parseForever(); goto out; // Forever can only be the last statement in a "forever" sequence.
+        case Tokens::kIdentifier: parseAssign(); break;
         case Tokens::kParallel:   parseParallel(); break;
+        case Tokens::kPause:      parsePause(); break;
         case Tokens::kRepeat:     parseRepeat(); break;
         case Tokens::kSequence:   parseSequence(); break;
-        case Tokens::kIdentifier: parseAssign(); break;
         case Tokens::kSignal:     parseSignal(); break;
-        case Tokens::kPause:      parsePause(); break;
         default:                  goto out; // Let match(kEnd) raise the error, if any.
         }
       }
@@ -1815,13 +1912,14 @@ namespace // Anonymous namespace to hyde the implementation details
       {
         switch (m_token)
         {
+        case Tokens::kFor:        parseFor(); break;
         case Tokens::kForever:    parseForever(); goto out; // Forever can only be the last statement in a sequence.
+        case Tokens::kIdentifier: parseAssign(); break;
         case Tokens::kParallel:   parseParallel(); break;
+        case Tokens::kPause:      parsePause(); break;
         case Tokens::kRepeat:     parseRepeat(); break;
         case Tokens::kSequence:   parseSequence(); break;
-        case Tokens::kIdentifier: parseAssign(); break;
         case Tokens::kSignal:     parseSignal(); break;
-        case Tokens::kPause:      parsePause(); break;
         default:                  goto out; // Let match(kEnd) raise the error, if any.
         }
       }
@@ -1844,13 +1942,14 @@ namespace // Anonymous namespace to hyde the implementation details
       {
         switch (m_token)
         {
+        case Tokens::kFor:        parseFor(); break;
         case Tokens::kForever:    parseForever(); goto out; // Forever can only be the last statement in a sequence.
+        case Tokens::kIdentifier: parseAssign(); break;
         case Tokens::kParallel:   parseParallel(); break;
+        case Tokens::kPause:      parsePause(); break;
         case Tokens::kRepeat:     parseRepeat(); break;
         case Tokens::kSequence:   parseSequence(); break;
-        case Tokens::kIdentifier: parseAssign(); break;
         case Tokens::kSignal:     parseSignal(); break;
-        case Tokens::kPause:      parsePause(); break;
         default:                  goto out; // Let match(kEnd) raise the error, if any.
         }
       }
@@ -2687,6 +2786,32 @@ namespace // Anonymous namespace to hyde the implementation details
       return true;
     }
 
+    bool next(Thread* thread)
+    {
+      struct Next
+      {
+        rio2d::Script::Number m_limit;
+        rio2d::Script::Number m_step;
+      };
+
+      rio2d::Script::LocalVar* local = m_locals + m_bytecode[thread->m_pc].m_index;
+      Next* args = (Next*)((char*)(thread->m_stack + thread->m_sp) - sizeof(Next));
+
+      local->m_number += args->m_step;
+
+      if (local->m_number <= args->m_limit)
+      {
+        thread->m_pc = m_bytecode[thread->m_pc + 1].m_address;
+      }
+      else
+      {
+        thread->m_sp -= 2;
+        thread->m_pc += 2;
+      }
+
+      return true;
+    }
+
     bool pause(Thread* thread)
     {
       float time = thread->m_stack[thread->m_sp - 1] -= thread->m_dt;
@@ -3105,6 +3230,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Insns::kModulus:         cont = modulus(thread); break;
         case Insns::kMul:             cont = mul(thread); break;
         case Insns::kNeg:             cont = neg(thread); break;
+        case Insns::kNext:            cont = next(thread); break;
         case Insns::kPause:           cont = pause(thread); break;
         case Insns::kPush:            cont = push(thread); break;
         case Insns::kRand:            cont = rand(thread); break;
