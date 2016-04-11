@@ -95,7 +95,7 @@ The `example` folder has a script which was used to test the game [Sky Defense](
     
     type = 'node' | 'number' | 'size' | 'vec2' | 'frames' .
     
-    statement = for | forever | parallel | repeat | sequence | assign | signal | pause .
+    statement = for | forever | parallel | repeat | sequence | while | assign | signal | pause .
     
     for = 'for' ID '=' expression 'to' expression ( 'step' expression )? statement* 'next' .
     
@@ -106,6 +106,8 @@ The `example` folder has a script which was used to test the game [Sky Defense](
     repeat = 'repeat' statement* 'until' expression .
     
     sequence = 'sequence' statement* 'end' .
+    
+    while = 'while' expression statement* 'end' .
     
     assign = ID '=' expression
            | ID '.' property '=' expression

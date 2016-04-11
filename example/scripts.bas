@@ -89,11 +89,13 @@ end
 
 sub groundHit(target as node, screenSize as size, frms as frames)
   target.moveby 0, screenSize.height * 0.12 in 0 secs
+  i = 0
   
-  for i = 0 to 9
+  while i < 10
     target.setframe frms, i
+    i = i + 1
     pause 0.1 secs
-  next
+  end
 
   target.visible = false
 end

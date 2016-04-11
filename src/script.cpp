@@ -159,6 +159,7 @@ namespace // Anonymous namespace to hyde the implementation details
       kTrunc = 0x10729e11U,
       kUntil = 0x10828031U,
       kVec2 = 0x7c9f7ed5U,
+      kWhile = 0x10a3387eU,
       kWith = 0x7ca01ea1U,
       kXor = 0x0b88c01eU,
     };
@@ -199,6 +200,7 @@ namespace // Anonymous namespace to hyde the implementation details
       case Tokens::kTrunc:
       case Tokens::kUntil:
       case Tokens::kVec2:
+      case Tokens::kWhile:
       case Tokens::kWith:
       case Tokens::kXor:
         return true;
@@ -1754,6 +1756,7 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kRepeat:     parseRepeat(); break;
         case Tokens::kSequence:   parseSequence(); break;
         case Tokens::kSignal:     parseSignal(); break;
+        case Tokens::kWhile:      parseWhile(); break;
         default:                  emit(Insns::kStop); goto out; // Let match(kEnd) raise the error, if any.
         }
       }
@@ -1817,7 +1820,7 @@ namespace // Anonymous namespace to hyde the implementation details
         emit(Insns::kPush, 1.0f);
       }
 
-      rio2d::Script::Address targetPC = m_emitter->getPC();
+      rio2d::Script::Address again = m_emitter->getPC();
 
       for (;;)
       {
@@ -1831,20 +1834,21 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kRepeat:     parseRepeat(); break;
         case Tokens::kSequence:   parseSequence(); break;
         case Tokens::kSignal:     parseSignal(); break;
-        default:                  goto out; // Let match(kEnd) raise the error, if any.
+        case Tokens::kWhile:      parseWhile(); break;
+        default:                  goto out; // Let match(kNext) raise the error, if any.
         }
       }
 
     out:
       match(Tokens::kNext);
-      emit(Insns::kNext, index, targetPC);
+      emit(Insns::kNext, index, again);
     }
 
     void parseForever()
     {
       match();
 
-      rio2d::Script::Address targetPC = m_emitter->getPC();
+      rio2d::Script::Address again = m_emitter->getPC();
 
       for (;;)
       {
@@ -1858,20 +1862,21 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kRepeat:     parseRepeat(); break;
         case Tokens::kSequence:   parseSequence(); break;
         case Tokens::kSignal:     parseSignal(); break;
+        case Tokens::kWhile:      parseWhile(); break;
         default:                  goto out; // Let match(kEnd) raise the error, if any.
         }
       }
 
     out:
       match(Tokens::kEnd);
-      emit(Insns::kJump, targetPC);
+      emit(Insns::kJump, again);
     }
 
     void parseParallel()
     {
       match();
 
-      rio2d::Script::Address jump = m_emitter->getPC();
+      rio2d::Script::Address patch = m_emitter->getPC();
       emit(Insns::kJump, 0);
 
       rio2d::Script::Address entries[rio2d::Script::kMaxThreads - 1]; // One thread must be available to spawn the others.
@@ -1896,10 +1901,12 @@ namespace // Anonymous namespace to hyde the implementation details
 
         switch (m_token)
         {
+        case Tokens::kFor:      parseFor(); emit(Insns::kStop); break;
         case Tokens::kForever:  parseForever(); break;
         case Tokens::kParallel: parseParallel(); emit(Insns::kStop); break;
         case Tokens::kRepeat:   parseRepeat(); emit(Insns::kStop); break;
         case Tokens::kSequence: parseSequence(); emit(Insns::kStop); break;
+        case Tokens::kWhile:    parseWhile(); emit(Insns::kStop);  break;
         default:                goto out; // Let match(kEnd) raise the error, if any.
         }
       }
@@ -1909,7 +1916,7 @@ namespace // Anonymous namespace to hyde the implementation details
 
       rio2d::Script::Bytecode bc;
       bc.m_address = m_emitter->getPC();
-      m_emitter->patch(jump + 1, bc);
+      m_emitter->patch(patch + 1, bc);
 
       for (size_t i = 0; i < count; i++)
       {
@@ -1921,7 +1928,7 @@ namespace // Anonymous namespace to hyde the implementation details
     {
       match();
 
-      rio2d::Script::Address targetPC = m_emitter->getPC();
+      rio2d::Script::Address again = m_emitter->getPC();
 
       for (;;)
       {
@@ -1935,14 +1942,15 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kRepeat:     parseRepeat(); break;
         case Tokens::kSequence:   parseSequence(); break;
         case Tokens::kSignal:     parseSignal(); break;
-        default:                  goto out; // Let match(kEnd) raise the error, if any.
+        case Tokens::kWhile:      parseWhile(); break;
+        default:                  goto out; // Let match(kUntil) raise the error, if any.
         }
       }
 
     out:
       match(Tokens::kUntil);
       parseExpressions(1, Tokens::kTrue);
-      emit(Insns::kJz, targetPC);
+      emit(Insns::kJz, again);
     }
 
     void parseSequence()
@@ -1961,12 +1969,49 @@ namespace // Anonymous namespace to hyde the implementation details
         case Tokens::kRepeat:     parseRepeat(); break;
         case Tokens::kSequence:   parseSequence(); break;
         case Tokens::kSignal:     parseSignal(); break;
+        case Tokens::kWhile:      parseWhile(); break;
         default:                  goto out; // Let match(kEnd) raise the error, if any.
         }
       }
 
     out:
       match(Tokens::kEnd);
+    }
+
+    void parseWhile()
+    {
+      match();
+
+      rio2d::Script::Address again = m_emitter->getPC();
+
+      parseExpressions(1, Tokens::kTrue);
+      rio2d::Script::Address patch = m_emitter->getPC();
+      emit(Insns::kJz, 0);
+
+      for (;;)
+      {
+        switch (m_token)
+        {
+        case Tokens::kFor:        parseFor(); break;
+        case Tokens::kForever:    parseForever(); goto out; // Forever can only be the last statement in a sequence.
+        case Tokens::kIdentifier: parseAssign(); break;
+        case Tokens::kParallel:   parseParallel(); break;
+        case Tokens::kPause:      parsePause(); break;
+        case Tokens::kRepeat:     parseRepeat(); break;
+        case Tokens::kSequence:   parseSequence(); break;
+        case Tokens::kSignal:     parseSignal(); break;
+        case Tokens::kWhile:      parseWhile(); break;
+        default:                  goto out; // Let match(kEnd) raise the error, if any.
+        }
+      }
+
+    out:
+      match(Tokens::kEnd);
+      emit(Insns::kJump, again);
+
+      rio2d::Script::Bytecode bc;
+      bc.m_address = m_emitter->getPC();
+      m_emitter->patch(patch + 1, bc);
     }
 
     void parseAssign()
