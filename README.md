@@ -87,7 +87,9 @@ All subroutine identifiers are stored as DJB2 hashes to avoid allocating memory 
 
 ## Script syntax
 
-The `example` folder has a script which was used to test the game [Sky Defense](https://www.packtpub.com/game-development/cocos2d-x-example-beginners-guide). The script grammar is:
+The `example` folder has a script which was used to test the game [Sky Defense](https://www.packtpub.com/game-development/cocos2d-x-example-beginners-guide).
+
+Comments start with a single quote (') and run until the end of the line. The script grammar is:
 
     script = subroutine* .
     

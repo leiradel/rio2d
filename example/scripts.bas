@@ -1,3 +1,5 @@
+' Public domain
+
 sub growBomb(target as node, clickPos as vec2)
   target.x = clickPos.x
   target.y = clickPos.y
@@ -99,7 +101,7 @@ sub groundHit(target as node, screenSize as size, frms as frames)
     pause 0.1 secs
   next
 
-  rem frms[0] contains the meteor sprite frame, so we reset the sprite to it
+  ' frms[0] contains the meteor sprite frame, so we reset the sprite to it
   target.setFrame frms, 0
   target.visible = false
 end

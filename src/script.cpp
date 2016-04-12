@@ -147,7 +147,6 @@ namespace // Anonymous namespace to hyde the implementation details
       kParallel = 0x1455e3f2U,
       kPause = 0x1020ea43U,
       kRand = 0x7c9d3deaU,
-      kRem = 0x0b88a549U,
       kRepeat = 0x192dec66U,
       kSecs = 0x7c9dd9f3U,
       kSequence = 0x0c15489eU,
@@ -1197,15 +1196,6 @@ namespace // Anonymous namespace to hyde the implementation details
         {
           m_token = m_hash;
         }
-        else if (m_hash == Tokens::kRem)
-        {
-          // Comment.
-          while (*m_current != '\n' && *m_current != 0) m_current++;
-
-          // Could be return next(...) since compilers do tail call optimization blah blah blah,
-          // but the optimization would be just a jump anyway, just like this goto here :P
-          goto again;
-        }
         else
         {
           m_token = Tokens::kIdentifier;
@@ -1341,6 +1331,14 @@ namespace // Anonymous namespace to hyde the implementation details
 
         m_length = m_current - m_lexeme;
         return;
+
+      case '\'':
+        // Comment.
+        while (*m_current != '\n' && *m_current != 0) m_current++;
+
+        // Could be return next(...) since compilers do tail call optimization blah blah blah,
+        // but the optimization would be just a jump anyway, just like this goto here :P
+        goto again;
       }
 
       if (*m_current == 0)
