@@ -511,12 +511,9 @@ namespace // Anonymous namespace to hyde the implementation details
       kCmpLessEqual,
       kCmpNotEqual,
       kDiv,
-      kDrop,
-      kDup,
       kFloor,
       kGetLocal,
       kGetProp,
-      kJnz,
       kJump,
       kJz,
       kLogicalAnd,
@@ -556,12 +553,9 @@ namespace // Anonymous namespace to hyde the implementation details
         1, // kCmpLessEqual
         1, // kCmpNotEqual
         1, // kDiv
-        1, // kDrop
-        1, // kDup
         1, // kFloor
         2, // kGetLocal
         3, // kGetProp
-        2, // kJnz
         2, // kJump
         2, // kJz
         1, // kLogicalAnd
@@ -606,12 +600,9 @@ namespace // Anonymous namespace to hyde the implementation details
       case kCmpLessEqual:    CCLOG("%s%04x\t%08x\tcmp_le", prefix, addr, bc->m_insn); bc += 1; break;
       case kCmpNotEqual:     CCLOG("%s%04x\t%08x\tcmp_ne", prefix, addr, bc->m_insn); bc += 1; break;
       case kDiv:             CCLOG("%s%04x\t%08x\tdiv", prefix, addr, bc->m_insn); bc += 1; break;
-      case kDrop:            CCLOG("%s%04x\t%08x\tdrop", prefix, addr, bc->m_insn); bc += 1; break;
-      case kDup:             CCLOG("%s%04x\t%08x\tdup", prefix, addr, bc->m_insn); bc += 1; break;
       case kFloor:           CCLOG("%s%04x\t%08x\tfloor", prefix, addr, bc->m_insn); bc += 1; break;
       case kGetLocal:        CCLOG("%s%04x\t%08x\tget_local l@%d", prefix, addr, bc->m_insn, bc[1].m_index); bc += 2; break;
       case kGetProp:         CCLOG("%s%04x\t%08x\tget_property l@%d f@%d", prefix, addr, bc->m_insn, bc[1].m_index, bc[2].m_index); bc += 3; break;
-      case kJnz:             CCLOG("%s%04x\t%08x\tjnz %04x", prefix, addr, bc->m_insn, bc[1].m_address); bc += 2; break;
       case kJump:            CCLOG("%s%04x\t%08x\tjump %04x", prefix, addr, bc->m_insn, bc[1].m_address); bc += 2; break;
       case kJz:              CCLOG("%s%04x\t%08x\tjz %04x", prefix, addr, bc->m_insn, bc[1].m_address); bc += 2; break;
       case kLogicalAnd:      CCLOG("%s%04x\t%08x\tand", prefix, addr, bc->m_insn); bc += 1; break;
@@ -948,8 +939,6 @@ namespace // Anonymous namespace to hyde the implementation details
       case Insns::kCmpLessEqual:
       case Insns::kCmpNotEqual:
       case Insns::kDiv:
-      case Insns::kDrop:
-      case Insns::kDup:
       case Insns::kFloor:
       case Insns::kLogicalAnd:
       case Insns::kLogicalNot:
@@ -966,7 +955,6 @@ namespace // Anonymous namespace to hyde the implementation details
         m_bytecode[m_pc++].m_insn = insn;
         break;
 
-      case Insns::kJnz:
       case Insns::kJump:
       case Insns::kJz:
       case Insns::kSpawn:
@@ -2777,19 +2765,6 @@ namespace // Anonymous namespace to hyde the implementation details
       return true;
     }
 
-    bool drop(Thread* thread)
-    {
-      thread->m_sp--;
-      return true;
-    }
-
-    bool dup(Thread* thread)
-    {
-      thread->m_stack[thread->m_sp] = thread->m_stack[thread->m_sp - 1];
-      thread->m_sp++;
-      return true;
-    }
-
     bool floor(Thread* thread)
     {
       thread->m_stack[thread->m_sp - 1] = ::floor(thread->m_stack[thread->m_sp - 1]);
@@ -2898,20 +2873,6 @@ namespace // Anonymous namespace to hyde the implementation details
 
       default:
         CCASSERT(0, "Unknown object type");
-      }
-
-      return true;
-    }
-
-    bool jnz(Thread* thread)
-    {
-      if (thread->m_stack[--thread->m_sp] != 0.0f)
-      {
-        thread->m_pc = m_bytecode[thread->m_pc].m_address;
-      }
-      else
-      {
-        thread->m_pc++;
       }
 
       return true;
@@ -3409,12 +3370,9 @@ namespace // Anonymous namespace to hyde the implementation details
         case Insns::kCmpLessEqual:    cont = cmpLessEqual(thread); break;
         case Insns::kCmpNotEqual:     cont = cmpNotEqual(thread); break;
         case Insns::kDiv:             cont = div(thread); break;
-        case Insns::kDrop:            cont = drop(thread); break;
-        case Insns::kDup:             cont = dup(thread); break;
         case Insns::kFloor:           cont = floor(thread); break;
         case Insns::kGetLocal:        cont = getLocal(thread); break;
         case Insns::kGetProp:         cont = getProp(thread); break;
-        case Insns::kJnz:             cont = jnz(thread); break;
         case Insns::kJump:            cont = jump(thread); break;
         case Insns::kJz:              cont = jz(thread); break;
         case Insns::kLogicalAnd:      cont = logicalAnd(thread); break;
