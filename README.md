@@ -75,7 +75,7 @@ The easing functions used by the scripts were taken from [AHEasing](https://gith
 
 ## DJB2 hashes
 
-All subroutine identifiers are stored as DJB2 hashes to avoid allocating memory for strings. If you use the functions that take the subroutine name, rio2d will evaluate the DJB2 hash of the name on each call. To avoid that, pre-compute the hash and use them instead of subroutine names. There is a small command-line utility to calculate DJB2 hashes in the `etc` folder (compile with `gcc -O2 -o djb2 djb2.c` or a similar command).
+All subroutine identifiers are stored as DJB2 hashes to avoid allocating memory for strings. If you use the functions that take the subroutine name, rio2d will evaluate the DJB2 hash of the name on each call. To avoid that, pre-compute the hashes and use them instead of subroutine names. There is a small command-line utility to calculate DJB2 hashes in the `etc` folder (compile with `gcc -O2 -o djb2 djb2.c` or a similar command).
 
     $ djb2 --help
     USAGE: djb2 [ --case ] [ --enum ] [ --prefix ] [ --cpp ] identifiers...

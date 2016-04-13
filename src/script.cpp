@@ -2569,33 +2569,44 @@ namespace // Anonymous namespace to hyde the implementation details
 
     void step(float dt)
     {
-      for (unsigned i = 0; i < m_numThreads; i++)
-      {
-        Thread* thread = m_threads + i;
-        thread->m_dt += dt;
-        consume(thread);
-      }
+      Thread* thread = m_threads;
+      Thread* current = m_threads;
+      const Thread* end = m_threads + m_numThreads;
 
-      Thread* t1 = m_threads;
-      const Thread* t2 = m_threads;
-      const Thread* end = t2 + m_numThreads;
-
-      while (t2 < end)
+      while (thread < end)
       {
-        if (t1 != t2 && m_bytecode[t2->m_pc].m_insn != Insns::kStop)
+        if (thread != current)
         {
-          *t1 = *t2;
+          *current = *thread;
         }
 
-        if (m_bytecode[t1->m_pc].m_insn != Insns::kStop)
+        current->m_dt += dt;
+
+        if (!consume(current))
         {
-          t1++;
+          // Do not stop this thread.
+          current++;
         }
 
-        t2++;
+        thread++;
       }
 
-      m_numThreads = t1 - m_threads;
+      // This can be larger if new threads were spawned.
+      end = m_threads + m_numThreads;
+
+      if (thread != current)
+      {
+        while (thread < end)
+        {
+          *current++ = *thread++;
+        }
+      }
+      else
+      {
+        current += end - thread;
+      }
+
+      m_numThreads = current - m_threads;
     }
 
     void update(float time)
@@ -3265,24 +3276,6 @@ namespace // Anonymous namespace to hyde the implementation details
 
     bool varyRel(Thread* thread)
     {
-      struct Args1
-      {
-        rio2d::Script::Number m_sourceA;
-        rio2d::Script::Number m_ratioA;
-        rio2d::Script::Number m_sourceT;
-        rio2d::Script::Number m_destT;
-      };
-
-      struct Args2
-      {
-        rio2d::Script::Number m_sourceA;
-        rio2d::Script::Number m_sourceB;
-        rio2d::Script::Number m_ratioA;
-        rio2d::Script::Number m_ratioB;
-        rio2d::Script::Number m_sourceT;
-        rio2d::Script::Number m_destT;
-      };
-
       rio2d::Script::Index index = m_bytecode[thread->m_pc].m_index;
       rio2d::Script::Index field = m_bytecode[thread->m_pc + 1].m_index;
       rio2d::Script::Index ease = m_bytecode[thread->m_pc + 2].m_index;
@@ -3294,20 +3287,20 @@ namespace // Anonymous namespace to hyde the implementation details
       {
       case Fields::kPositionIndex:
       {
-        Args2* args = (Args2*)((char*)(thread->m_stack + thread->m_sp) - sizeof(Args2));
+        VaryArgs2* args = (VaryArgs2*)((char*)(thread->m_stack + thread->m_sp) - sizeof(VaryArgs2));
         args->m_sourceT += thread->m_dt;
 
         if (args->m_sourceT < args->m_destT)
         {
           rio2d::Script::Number time = Easing::evaluate(ease, args->m_sourceT / args->m_destT);
-          node->setPositionX(args->m_sourceA + time * args->m_ratioA);
-          node->setPositionY(args->m_sourceB + time * args->m_ratioB);
+          node->setPositionX(args->m_sourceA + time * args->m_destA);
+          node->setPositionY(args->m_sourceB + time * args->m_destB);
           return false;
         }
         else
         {
-          node->setPositionX(args->m_sourceA + args->m_ratioA);
-          node->setPositionY(args->m_sourceB + args->m_ratioB);
+          node->setPositionX(args->m_sourceA + args->m_destA);
+          node->setPositionY(args->m_sourceB + args->m_destB);
           thread->m_dt = args->m_sourceT - args->m_destT;
           thread->m_sp -= 6;
           thread->m_pc += 3;
@@ -3320,18 +3313,18 @@ namespace // Anonymous namespace to hyde the implementation details
       case Fields::kRotationIndex:
       case Fields::kScaleIndex:
       {
-        Args1* args = (Args1*)((char*)(thread->m_stack + thread->m_sp) - sizeof(Args1));
+        VaryArgs1* args = (VaryArgs1*)((char*)(thread->m_stack + thread->m_sp) - sizeof(VaryArgs1));
         args->m_sourceT += thread->m_dt;
 
         if (args->m_sourceT < args->m_destT)
         {
           rio2d::Script::Number time = Easing::evaluate(ease, args->m_sourceT / args->m_destT);
-          setField(node, field, args->m_sourceA + time * args->m_ratioA);
+          setField(node, field, args->m_sourceA + time * args->m_destA);
           return false;
         }
         else
         {
-          setField(node, field, args->m_sourceA + args->m_ratioA);
+          setField(node, field, args->m_sourceA + args->m_destA);
           thread->m_dt = args->m_sourceT - args->m_destT;
           thread->m_sp -= 4;
           thread->m_pc += 3;
@@ -3345,7 +3338,7 @@ namespace // Anonymous namespace to hyde the implementation details
       return true;
     }
 
-    void consume(Thread* thread)
+    bool consume(Thread* thread)
     {
       // Execute a thread until an insn that consumes time.
       // If the thread executes the same address twice while in here, stop it (infinite loop).
@@ -3358,6 +3351,7 @@ namespace // Anonymous namespace to hyde the implementation details
 
         switch (m_bytecode[thread->m_pc++].m_insn)
         {
+        // Insns that take 0 time.
         case Insns::kAdd:             cont = add(thread); break;
         case Insns::kCallMethod:      cont = callMethod(thread); break;
         case Insns::kCeil:            cont = ceil(thread); break;
@@ -3371,16 +3365,12 @@ namespace // Anonymous namespace to hyde the implementation details
         case Insns::kFloor:           cont = floor(thread); break;
         case Insns::kGetLocal:        cont = getLocal(thread); break;
         case Insns::kGetProp:         cont = getProp(thread); break;
-        case Insns::kJump:            cont = jump(thread); break;
-        case Insns::kJz:              cont = jz(thread); break;
         case Insns::kLogicalAnd:      cont = logicalAnd(thread); break;
         case Insns::kLogicalNot:      cont = logicalNot(thread); break;
         case Insns::kLogicalOr:       cont = logicalOr(thread); break;
         case Insns::kModulus:         cont = modulus(thread); break;
         case Insns::kMul:             cont = mul(thread); break;
         case Insns::kNeg:             cont = neg(thread); break;
-        case Insns::kNext:            cont = next(thread); break;
-        case Insns::kPause:           cont = pause(thread); break;
         case Insns::kPush:            cont = push(thread); break;
         case Insns::kRand:            cont = rand(thread); break;
         case Insns::kRandRange:       cont = randRange(thread); break;
@@ -3389,28 +3379,39 @@ namespace // Anonymous namespace to hyde the implementation details
         case Insns::kSetProp:         cont = setProp(thread); break;
         case Insns::kSignal:          cont = signal(thread); break;
         case Insns::kSpawn:           cont = spawn(thread); break;
-        case Insns::kStop:            cont = stop(thread); break;
         case Insns::kSub:             cont = sub(thread); break;
         case Insns::kTrunc:           cont = trunc(thread); break;
+
+        // Insns that consume time.
+        case Insns::kPause:           cont = pause(thread); break;
         case Insns::kVaryAbs:         cont = varyAbs(thread); break;
         case Insns::kVaryRel:         cont = varyRel(thread); break;
+
+        // Insns that jump in into the code.
+        case Insns::kJump:            cont = jump(thread); break;
+        case Insns::kJz:              cont = jz(thread); break;
+        case Insns::kNext:            cont = next(thread); break;
+
         default:                      CCASSERT(0, "Unknown instruction");
+        case Insns::kStop:            return true;
         }
 
         if (!cont)
         {
           thread->m_pc--;
           thread->m_dt = 0.0f;
-          return;
+          return false;
         }
 
         if (thread->m_pc == saved_pc)
         {
           // Avoid infinite loops.
           thread->m_dt = 0.0f;
-          return;
+          return false;
         }
       } while (thread->m_dt > 0.0f);
+
+      return false;
     }
   };
 }
